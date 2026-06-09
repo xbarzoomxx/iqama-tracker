@@ -606,23 +606,46 @@ export default function App() {
             const days = r.expiryDate ? getDaysLeft(r.expiryDate) : null;
             const isExpired = days !== null && days < 0;
             const expiredDays = isExpired ? Math.abs(days) : 0;
-            const expiredQuarters = isExpired ? Math.ceil(expiredDays / 90) : 0;
             const useLateRate = isExpired && expiredDays > 3;
+
+            // ── حساب المتأخرات بدقة يومية ──
+            // الأيام المتأخرة تُحسب بالنسبة من الربع (90 يوم)
+            // مثال: انتهى منذ 30 يوم = 30/90 من الربع فقط
+            const expiredFraction = expiredDays / 90; // كسر الأرباع المنتهية
+            // الأرباع الكاملة المنتهية
+            const expiredFullQuarters = Math.floor(expiredDays / 90);
+            // الأيام الزائدة بعد آخر ربع كامل
+            const remainingExpiredDays = expiredDays % 90;
+            // تكلفة الأيام الزائدة = (أيام / 90) × تكلفة الربع
+            const partialQuarterCost = remainingExpiredDays / 90;
+
             let backlogPassport=0,backlogWork=0,renewPassport=0,renewWork=0;
             if (isEmployee) {
               const rateQ = useLateRate ? PASSPORT_LATE_PER_Q : PASSPORT_NORMAL_PER_Q;
-              backlogPassport = expiredQuarters * rateQ;
-              backlogWork     = expiredQuarters * WORK_PERMIT_PER_Q;
-              renewPassport   = quarters * rateQ;
-              renewWork       = quarters * WORK_PERMIT_PER_Q;
+              if (isExpired) {
+                // متأخرات بالأيام الفعلية (نسبة من الربع)
+                const rawBacklogPassport = (expiredFullQuarters + partialQuarterCost) * rateQ;
+                const rawBacklogWork     = (expiredFullQuarters + partialQuarterCost) * WORK_PERMIT_PER_Q;
+                // الحد الأدنى الثابت: 413 للجواز و 2425 لرخصة العمل
+                backlogPassport = Math.ceil(Math.max(rawBacklogPassport, PASSPORT_LATE_PER_Q));
+                backlogWork     = Math.ceil(Math.max(rawBacklogWork, WORK_PERMIT_PER_Q));
+              }
+              renewPassport = quarters * rateQ;
+              renewWork     = quarters * WORK_PERMIT_PER_Q;
             } else {
               renewPassport = quarters * PASSPORT_DEP_PER_Q;
             }
             const totalBacklog = backlogPassport + backlogWork;
             const totalRenew   = renewPassport + renewWork;
             const total        = totalBacklog + totalRenew;
-            return {r,isEmployee,isExpired,expiredDays,expiredQuarters,useLateRate,
-                    backlogPassport,backlogWork,totalBacklog,renewPassport,renewWork,totalRenew,total};
+            // للعرض: الكسر كنسبة مئوية من الربع
+            const expiredQuarterDisplay = expiredDays > 0
+              ? (expiredFullQuarters > 0 ? `${expiredFullQuarters} ربع` : "") +
+                (remainingExpiredDays > 0 ? `${expiredFullQuarters > 0 ? " + " : ""}${remainingExpiredDays} يوم` : "")
+              : "0";
+            return {r,isEmployee,isExpired,expiredDays,expiredFullQuarters,remainingExpiredDays,
+                    useLateRate,backlogPassport,backlogWork,totalBacklog,
+                    renewPassport,renewWork,totalRenew,total,expiredQuarterDisplay};
           };
 
           const breakdown    = targetRecords.map(calcRecord);
@@ -809,7 +832,7 @@ export default function App() {
                         <div style={{fontWeight:600,fontSize:12,color:isEmployee?(darkMode?"#e8eaf0":"#1e3a5f"):(darkMode?"#c4b5fd":"#5b21b6")}}>{r.name}</div>
                         <div style={{fontSize:10,color:"#6b7280",display:"flex",gap:5,marginTop:2,flexWrap:"wrap"}}>
                           <span style={{background:rcc.bg,color:rcc.text,padding:"0 5px",borderRadius:5}}>{r.company}</span>
-                          {isExpired&&<span style={{color:"#dc2626"}}>⚠️ {expiredDays} يوم {useLateRate?"غرامة":""}</span>}
+                          {isExpired&&<span style={{color:"#dc2626"}}>⚠️ {expiredQuarterDisplay} {useLateRate?"· غرامة":""}</span>}
                           {!isEmployee&&<span style={{color:"#7c3aed"}}>{r.relation}</span>}
                         </div>
                       </div>
