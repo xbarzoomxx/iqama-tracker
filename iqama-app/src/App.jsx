@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import { ref, onValue, set } from "firebase/database";
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -11,6 +9,7 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from "firebase/auth";
+import { db, auth, DB_PATH as DB_PATH_CONST } from "./firebase.js";
 
 const STORAGE_KEY = "iqama_tracker_v3";
 
