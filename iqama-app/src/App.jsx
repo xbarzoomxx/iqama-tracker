@@ -70,7 +70,7 @@ const COMPANY_CR = {
     crNumber:"4031081110", unifiedNumber:"7006539477",
     establishNumber:"13-1044947", type:"شركة ذات مسؤولية محدودة",
     status:"نشط", address:"مكة المكرمة - عبدالله خياط",
-    email:"info@anjal.cc", manager:"حواء الزهراني",
+    email:"info@anjal.cc", manager:"عمار حسن علي الحسن",
     facilityManager:"عمار حسن علي الحسن",
   },
   "دلتا الماسية": {
@@ -79,6 +79,7 @@ const COMPANY_CR = {
     type:"شركة ذات مسؤولية محدودة",
     status:"نشط", issueDate:"2019-10-10",
     facilityManager:"عمار حسن علي الحسن",
+    manager:"عمار حسن علي الحسن",
   },
   "البيوت الذكية": {
     name:"شركة البيوت الذكية للمراقبة الأمنية",
@@ -740,8 +741,8 @@ export default function App() {
         {/* Stats Cards */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:18}}>
           {[
-            {label:"الإجمالي",value:stats.total,color:"#1e3a5f",icon:"📋",filter:null},
-            {label:"موظفون",value:stats.employees,color:"#374151",icon:"👤",filter:"موظف",fKey:"type"},
+            {label:"الإجمالي",value:stats.total,color:darkMode?"#f0f2f7":"#1e3a5f",icon:"📋",filter:null},
+            {label:"موظفون",value:stats.employees,color:darkMode?"#f0f2f7":"#374151",icon:"👤",filter:"موظف",fKey:"type"},
             {label:"مرافقون",value:stats.dependents,color:"#7c3aed",icon:"👨‍👩‍👧",filter:"مرافق",fKey:"type"},
             {label:"سارية",value:stats.valid,color:"#16a34a",icon:"✅",filter:"سارية",fKey:"status"},
             {label:"تنتهي قريباً",value:stats.soon,color:"#d97706",icon:"⚠️",filter:"تنتهي قريباً",fKey:"status"},
@@ -863,7 +864,24 @@ export default function App() {
                 <option value="name">ترتيب: الاسم</option>
                 <option value="company">ترتيب: الشركة</option>
               </select>
-              <span style={{color:"#6b7280",fontSize:12,whiteSpace:"nowrap"}}>{filtered.length} سجل</span>
+              <span style={{color:darkMode?"#a0a8bb":"#6b7280",fontSize:12,whiteSpace:"nowrap"}}>{filtered.length} سجل</span>
+            </div>
+            {/* شرح الفلاتر */}
+            <div style={{background:darkMode?"#1e222b":"#f8faff",borderRadius:10,padding:"10px 16px",marginBottom:12,border:`1px solid ${darkMode?"#2a2f3d":"#dbeafe"}`,display:"flex",flexWrap:"wrap",gap:12,alignItems:"center"}}>
+              <span style={{fontSize:12,fontWeight:700,color:darkMode?"#93c5fd":"#2563eb"}}>💡 دليل الفلاتر:</span>
+              {[
+                {label:"🔍 البحث",desc:"ابحث بالاسم أو رقم الإقامة أو المهنة"},
+                {label:"🏢 الشركة",desc:"فلترة حسب الشركة"},
+                {label:"👤 النوع",desc:"موظف أو مرافق"},
+                {label:"⏳ الحالة",desc:"سارية / تنتهي قريباً (30 يوم) / منتهية"},
+                {label:"🌍 الجنسية",desc:"فلترة حسب الجنسية"},
+                {label:"↕️ الترتيب",desc:"رتّب حسب التاريخ أو الاسم أو الشركة"},
+              ].map(f=>(
+                <div key={f.label} style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
+                  <span style={{fontWeight:700,color:darkMode?"#f0f2f7":"#1e3a5f"}}>{f.label}:</span>
+                  <span style={{color:darkMode?"#a0a8bb":"#6b7280"}}>{f.desc}</span>
+                </div>
+              ))}
             </div>
 
             {showForm&&(
@@ -872,13 +890,13 @@ export default function App() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:11}}>
                   {[{l:"الاسم *",k:"name",t:"text"},{l:"الجنسية",k:"nationality",t:"text"},{l:"رقم الإقامة *",k:"iqamaNumber",t:"text"},{l:"تاريخ انتهاء الإقامة",k:"expiryDate",t:"date"},{l:"رقم الجواز",k:"passportNumber",t:"text"},{l:"المهنة",k:"jobTitle",t:"text"},{l:"تكلفة التجديد (ريال)",k:"renewalCost",t:"number"},{l:"رقم إقامة رب الأسرة",k:"familyHeadId",t:"text"}].map(f=>(
                     <div key={f.k}>
-                      <label style={{display:"block",marginBottom:3,fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#374151"}}>{f.l}</label>
+                      <label style={{display:"block",marginBottom:3,fontSize:12,fontWeight:600,color:darkMode?"#d1d5db":"#374151"}}>{f.l}</label>
                       <input type={f.t} value={form[f.k]} onChange={e=>setForm({...form,[f.k]:e.target.value})} style={inp}/>
                     </div>
                   ))}
                   {[{l:"النوع",k:"type",o:["موظف","مرافق"]},{l:"صلة القرابة",k:"relation",o:["","زوجة","ابن","بنت"]},{l:"الجنس",k:"gender",o:["ذكر","أنثى"]},{l:"خارج المملكة",k:"outsideKingdom",o:["لا","نعم"]},{l:"حالة التجديد",k:"renewalStatus",o:["لم يبدأ","قيد التجديد","مكتمل"]},{l:"الشركة",k:"company",o:["انجال المشاعر","دلتا الماسية"]}].map(f=>(
                     <div key={f.k}>
-                      <label style={{display:"block",marginBottom:3,fontSize:12,fontWeight:600,color:"#374151"}}>{f.l}</label>
+                      <label style={{display:"block",marginBottom:3,fontSize:12,fontWeight:600,color:darkMode?"#f0f2f7":"#374151"}}>{f.l}</label>
                       <select value={form[f.k]} onChange={e=>setForm({...form,[f.k]:e.target.value})} style={inp}>{f.o.map(o=><option key={o}>{o}</option>)}</select>
                     </div>
                   ))}
@@ -937,7 +955,7 @@ export default function App() {
                               <>
                                 <div style={{fontWeight:800,fontSize:20,color:sc.text}}>{days<0?Math.abs(days):days}</div>
                                 <div style={{fontSize:10,color:"#6b7280"}}>{days<0?"يوم منتهي":"يوم متبقي"}</div>
-                                <div style={{fontSize:11,color:"#9ca3af"}}>{new Date(r.expiryDate).toLocaleDateString("ar-SA")}</div>
+                                <div style={{fontSize:11,color:darkMode?"#6b7585":"#9ca3af"}}>{new Date(r.expiryDate).toLocaleDateString("ar-SA")}</div>
                               </>
                             ):null}
                           </div>
@@ -1324,7 +1342,7 @@ export default function App() {
                   {label:"تكلفة التجديد",val:grandRenew,color:"#2563eb",bg:"#eff6ff",border:"#bfdbfe",icon:"🔄"},
                   {label:"متأخرات منتهية",val:grandBacklog,color:"#dc2626",bg:"#fee2e2",border:"#fca5a5",icon:"⚠️"},
                   {label:"استكمال الربع الحالي",val:grandCurrent,color:"#d97706",bg:"#fef3c7",border:"#fcd34d",icon:"🕐"},
-                  {label:"موظفون محددون",val:targetEmployees.length,color:"#374151",bg:"#f9fafb",border:"#e5e7eb",icon:"👤",isCount:true},
+                  {label:"موظفون محددون",val:targetEmployees.length,color:darkMode?"#f0f2f7":"#374151",bg:"#f9fafb",border:"#e5e7eb",icon:"👤",isCount:true},
                   {label:"مرافقون مشمولون",val:targetDependents.length,color:"#7c3aed",bg:"#f3e8ff",border:"#c4b5fd",icon:"👨‍👩‍👧",isCount:true},
                   {label:"إقامات منتهية",val:expiredCount,color:"#dc2626",bg:"#fef2f2",border:"#fecaca",icon:"❌",isCount:true},
                 ].map(c=>(
@@ -1412,12 +1430,84 @@ export default function App() {
             <div>
               {/* ── عنوان ── */}
               <div style={{background:dm?"#161920":"#fff",borderRadius:14,padding:"18px 22px",marginBottom:18,boxShadow:dm?"0 2px 10px rgba(0,0,0,0.5)":"0 2px 10px rgba(0,0,0,0.07)"}}>
-                <div style={{fontWeight:800,fontSize:16,color:dm?"#f0f2f7":"#1e3a5f",marginBottom:6,display:"flex",alignItems:"center",gap:8}}>
-                  ⚖️ تقرير الالتزام بالتنصيف
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
+                  <div>
+                    <div style={{fontWeight:800,fontSize:16,color:dm?"#f0f2f7":"#1e3a5f",marginBottom:6,display:"flex",alignItems:"center",gap:8}}>
+                      ⚖️ تقرير الالتزام بالتنصيف
+                    </div>
+                    <p style={{fontSize:13,color:dm?"#a0a8bb":"#6b7280",margin:0}}>
+                      مقارنة المهن الموجودة حالياً مع المتطلبات الرسمية لكل نشاط تجاري
+                    </p>
+                  </div>
+                  <button onClick={()=>{
+                    const today=new Date().toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"});
+                    let sections="";
+                    Object.entries(CLASSIFICATION_REQUIREMENTS).forEach(([compName,req])=>{
+                      const compEmps=records.filter(r=>r.company===compName&&r.type!=="مرافق");
+                      const jobCounts=req.jobs.map(j=>{
+                        const count=compEmps.filter(e=>matchJob(e.jobTitle||e.notes,j.title)).length;
+                        return {...j,count,diff:count-j.required};
+                      });
+                      const compliance=Math.round(jobCounts.filter(j=>j.diff>=0).length/jobCounts.length*100);
+                      const statusColor=compliance===100?"#16a34a":compliance>=70?"#d97706":"#dc2626";
+                      sections+=`
+                        <div style="margin-bottom:28px;page-break-inside:avoid">
+                          <div style="background:${req.color};color:#fff;padding:12px 18px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center">
+                            <div><strong style="font-size:16px">${req.icon} ${compName}</strong><div style="font-size:12px;opacity:.85;margin-top:2px">${req.activity}</div></div>
+                            <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 16px;text-align:center">
+                              <div style="font-size:22px;font-weight:800">${compliance}%</div>
+                              <div style="font-size:11px">${compliance===100?"✅ مكتمل":compliance>=70?"⚠️ جزئي":"❌ ناقص"}</div>
+                            </div>
+                          </div>
+                          <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-top:none">
+                            <thead><tr style="background:#f9fafb">
+                              <th style="padding:9px 14px;text-align:right;font-size:12px;border-bottom:1px solid #e5e7eb">المهنة</th>
+                              <th style="padding:9px 14px;text-align:center;font-size:12px;border-bottom:1px solid #e5e7eb">المطلوب</th>
+                              <th style="padding:9px 14px;text-align:center;font-size:12px;border-bottom:1px solid #e5e7eb">الموجود</th>
+                              <th style="padding:9px 14px;text-align:center;font-size:12px;border-bottom:1px solid #e5e7eb">الفرق</th>
+                              <th style="padding:9px 14px;text-align:center;font-size:12px;border-bottom:1px solid #e5e7eb">الحالة</th>
+                              <th style="padding:9px 14px;text-align:right;font-size:12px;border-bottom:1px solid #e5e7eb">الموظفون</th>
+                            </tr></thead>
+                            <tbody>
+                            ${jobCounts.map((j,i)=>{
+                              const emps=compEmps.filter(e=>matchJob(e.jobTitle||e.notes,j.title));
+                              const c=j.diff>=0?"#16a34a":j.diff>=-1?"#d97706":"#dc2626";
+                              const bg=i%2===0?"#fff":"#f9fafb";
+                              return `<tr style="background:${bg}">
+                                <td style="padding:8px 14px;font-weight:600;border-bottom:1px solid #f3f4f6;border-right:3px solid ${c}">${j.title}</td>
+                                <td style="padding:8px 14px;text-align:center;font-weight:700;border-bottom:1px solid #f3f4f6">${j.required}</td>
+                                <td style="padding:8px 14px;text-align:center;font-weight:800;color:${j.count>=j.required?"#16a34a":j.count>0?"#d97706":"#dc2626"};border-bottom:1px solid #f3f4f6">${j.count}</td>
+                                <td style="padding:8px 14px;text-align:center;color:${c};font-weight:700;border-bottom:1px solid #f3f4f6">${j.diff>0?"+"+j.diff:j.diff}</td>
+                                <td style="padding:8px 14px;text-align:center;border-bottom:1px solid #f3f4f6"><span style="background:${j.diff>=0?"#f0fdf4":j.diff>=-1?"#fefce8":"#fef2f2"};color:${c};padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">${j.diff>=0?"✅ مكتمل":j.diff>=-1?"⚠️ ناقص 1":"❌ ناقص "+Math.abs(j.diff)}</span></td>
+                                <td style="padding:8px 14px;font-size:11px;color:#6b7280;border-bottom:1px solid #f3f4f6">${emps.map(e=>e.name).join(" · ")||"—"}</td>
+                              </tr>`;
+                            }).join("")}
+                            <tr style="background:#f0fdf4;font-weight:800">
+                              <td style="padding:9px 14px;color:#15803d">الإجمالي</td>
+                              <td style="padding:9px 14px;text-align:center;color:#15803d">${req.jobs.reduce((s,j)=>s+j.required,0)}</td>
+                              <td style="padding:9px 14px;text-align:center;color:#15803d">${jobCounts.reduce((s,j)=>s+j.count,0)}</td>
+                              <td colspan="3" style="padding:9px 14px;text-align:center;color:${statusColor};font-size:13px">${compliance}% التزام</td>
+                            </tr>
+                            </tbody>
+                          </table>
+                        </div>`;
+                    });
+                    const html=`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير التنصيف</title>
+                    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;direction:rtl;padding:24px;color:#1f2937;font-size:13px}
+                    @media print{body{padding:12px}}</style></head><body>
+                    <div style="background:linear-gradient(135deg,#6B1A1A,#F5A800);color:#fff;padding:20px 24px;border-radius:12px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center">
+                      <div><h1 style="font-size:18px;font-weight:800">⚖️ تقرير الالتزام بالتنصيف</h1><p style="opacity:.85;margin-top:4px;font-size:12px">تاريخ التقرير: ${today}</p></div>
+                      <div style="text-align:left;font-size:12px">إجمالي الموظفين: <strong>${records.filter(r=>r.type!=="مرافق").length}</strong></div>
+                    </div>
+                    ${sections}
+                    <script>window.onload=()=>window.print();</script></body></html>`;
+                    const win=window.open(URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})),"_blank");
+                    if(!win)alert("يرجى السماح بفتح النوافذ المنبثقة");
+                  }}
+                    style={{background:"#dc2626",color:"#fff",border:"none",borderRadius:10,padding:"9px 18px",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+                    📄 تصدير PDF
+                  </button>
                 </div>
-                <p style={{fontSize:13,color:dm?"#a0a8bb":"#6b7280",margin:0}}>
-                  مقارنة المهن الموجودة حالياً مع المتطلبات الرسمية لكل نشاط تجاري
-                </p>
               </div>
 
               {/* ── بطاقة لكل شركة ── */}
@@ -1514,7 +1604,7 @@ export default function App() {
                             borderBottom:`1px solid ${dm?"#2a2f3d":"#f3f4f6"}`,
                             borderRight:`3px solid ${rowBorder}`,
                           }}>
-                            <span style={{fontWeight:600,fontSize:13,color:dm?"#f0f2f7":"#374151"}}>{j.title}</span>
+                            <span style={{fontWeight:600,fontSize:13,color:dm?"#ffffff":"#374151"}}>{j.title}</span>
                             <span style={{textAlign:"center",fontWeight:700,fontSize:14,color:dm?"#a0a8bb":"#6b7280"}}>{j.required}</span>
                             <span style={{textAlign:"center",fontWeight:800,fontSize:14,color:j.count>=j.required?"#16a34a":j.count>0?"#d97706":"#dc2626"}}>{j.count}</span>
                             <span style={{textAlign:"center",fontWeight:700,fontSize:13,color:textColor}}>
@@ -1553,7 +1643,7 @@ export default function App() {
                           return (
                             <div key={j.title} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,border:`1px solid ${isOk?(dm?"#166534":"#86efac"):(dm?"#7f1d1d":"#fca5a5")}`,padding:"10px 12px"}}>
                               <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                                <span style={{fontSize:12,fontWeight:700,color:dm?"#f0f2f7":"#374151"}}>{j.title}</span>
+                                <span style={{fontSize:12,fontWeight:700,color:dm?"#ffffff":"#374151"}}>{j.title}</span>
                                 <span style={{fontSize:11,fontWeight:700,color:isOk?"#16a34a":"#dc2626"}}>{j.count}/{j.required}</span>
                               </div>
                               {emps.length===0?(
@@ -1600,7 +1690,89 @@ export default function App() {
           );
         })()}
 
-        {/* ══════ نافذة Google Drive ══════ */}
+        
+        {/* ══════ النافذة المنبثقة للبطاقات ══════ */}
+        {modalCard && (() => {
+          const getModalRecords = () => {
+            if (!modalCard.fKey) return records;
+            if (modalCard.fKey === "status")  return records.filter(r => getStatus(r) === modalCard.filter);
+            if (modalCard.fKey === "company") return records.filter(r => r.company === modalCard.filter);
+            if (modalCard.fKey === "type")    return records.filter(r => modalCard.filter === "مرافق" ? r.type === "مرافق" : r.type !== "مرافق");
+            return [];
+          };
+          const modalRecords = getModalRecords().sort((a,b) => {
+            const pa = getStatus(a)==="منتهية"?0:getStatus(a)==="تنتهي قريباً"?1:2;
+            const pb = getStatus(b)==="منتهية"?0:getStatus(b)==="تنتهي قريباً"?1:2;
+            return pa-pb || getDaysLeft(a.expiryDate)-getDaysLeft(b.expiryDate);
+          });
+          const dm = darkMode;
+          return (
+            <div onClick={()=>setModalCard(null)}
+              style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
+              <div onClick={e=>e.stopPropagation()}
+                style={{background:dm?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:820,maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+                <div style={{background:"linear-gradient(135deg,#3d1000,#6B1A1A)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <span style={{fontSize:28}}>{modalCard.icon}</span>
+                    <div>
+                      <h2 style={{margin:0,fontSize:18,fontWeight:800,color:"#fff"}}>{modalCard.label}</h2>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,0.8)",marginTop:2}}>{modalRecords.length} سجل</div>
+                    </div>
+                  </div>
+                  <button onClick={()=>setModalCard(null)}
+                    style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:34,height:34,fontSize:18,cursor:"pointer",fontWeight:700}}>✕</button>
+                </div>
+                <div style={{overflowY:"auto",padding:"16px 20px",flex:1}}>
+                  {modalRecords.length === 0 ? (
+                    <div style={{textAlign:"center",padding:40,color:dm?"#a0a8bb":"#6b7280"}}>
+                      <div style={{fontSize:44}}>📭</div><p style={{marginTop:8}}>لا توجد سجلات</p>
+                    </div>
+                  ) : modalRecords.map(r => {
+                    const st=getStatus(r), sc=STATUS_COLORS[st];
+                    const days=r.expiryDate?getDaysLeft(r.expiryDate):null;
+                    const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                    const headRecord=r.type==="مرافق"?records.find(e=>e.iqamaNumber===r.familyHeadId):null;
+                    return (
+                      <div key={r.id} style={{background:dm?"#252830":"#f9fafb",borderRadius:12,padding:"14px 16px",marginBottom:10,borderRight:`4px solid ${sc.border}`,display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
+                        <div>
+                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:5}}>
+                            <strong style={{fontSize:14,color:dm?"#ffffff":"#1e3a5f"}}>{r.name}</strong>
+                            {r.type==="مرافق"&&<span style={{background:"#f3e8ff",color:"#7c3aed",padding:"1px 8px",borderRadius:8,fontSize:11,fontWeight:600}}>{r.relation}</span>}
+                            <span style={{background:cc.bg,color:cc.text,border:`1px solid ${cc.border}`,padding:"1px 7px",borderRadius:8,fontSize:11,fontWeight:600}}>{r.company}</span>
+                            {r.outsideKingdom==="نعم"&&<span style={{background:"#fef3c7",color:"#d97706",padding:"1px 7px",borderRadius:8,fontSize:11}}>✈️ خارج</span>}
+                          </div>
+                          <div style={{display:"flex",gap:12,fontSize:12,color:dm?"#a0a8bb":"#6b7280",flexWrap:"wrap"}}>
+                            <span>🪪 {r.iqamaNumber}</span>
+                            {r.nationality&&<span>🌍 {r.nationality}</span>}
+                            {r.jobTitle&&r.type!=="مرافق"&&<span>💼 {r.jobTitle}</span>}
+                            {headRecord&&<span style={{color:dm?"#c4b5fd":"#7c3aed"}}>👤 {headRecord.name}</span>}
+                          </div>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                          {days!==null&&(
+                            <div style={{textAlign:"center"}}>
+                              <div style={{fontWeight:800,fontSize:20,color:sc.text,lineHeight:1}}>{days<0?Math.abs(days):days}</div>
+                              <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280"}}>{days<0?"يوم منتهي":"يوم متبقي"}</div>
+                              <div style={{fontSize:11,color:dm?"#a0a8bb":"#9ca3af"}}>{new Date(r.expiryDate).toLocaleDateString("ar-SA")}</div>
+                            </div>
+                          )}
+                          <span style={{background:sc.bg,border:`1px solid ${sc.border}`,color:sc.text,padding:"3px 10px",borderRadius:14,fontSize:12,fontWeight:700}}>{st}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{padding:"12px 20px",borderTop:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0,background:dm?"#161920":"#f9fafb"}}>
+                  <span style={{fontSize:12,color:dm?"#a0a8bb":"#6b7280"}}>اضغط خارج النافذة للإغلاق</span>
+                  <button onClick={()=>setModalCard(null)}
+                    style={{background:"#8B2500",color:"#fff",border:"none",borderRadius:8,padding:"7px 20px",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>إغلاق</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+{/* ══════ نافذة Google Drive ══════ */}
         {driveModal && (
           <div onClick={()=>setDriveModal(null)}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
