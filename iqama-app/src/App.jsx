@@ -468,6 +468,7 @@ export default function App() {
   const [driveLinkInput, setDriveLinkInput] = useState("");
   const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
   const [driveLinkLabel, setDriveLinkLabel] = useState("");
+  const [importModal, setImportModal] = useState(false);
   const [importResult, setImportResult] = useState(null); // {updated, notFound, rows}
   const [notifModal, setNotifModal] = useState(false);
   const [notifDays, setNotifDays] = useState(30); // null | {label, filter, fKey, color, icon}
