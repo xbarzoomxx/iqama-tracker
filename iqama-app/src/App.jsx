@@ -461,10 +461,6 @@ export default function App() {
   const [renewModal, setRenewModal] = useState(null); // {record} أو null
   const [renewDate, setRenewDate] = useState("");
   const [renewNote, setRenewNote] = useState("");
-  const [editCrModal, setEditCrModal] = useState(null); // {compName, data}
-  const [editLinkModal, setEditLinkModal] = useState(null); // {id, index, link}
-  const [customCr, setCustomCr]   = useState(() => { try{return JSON.parse(localStorage.getItem("custom_cr")||"{}");}catch{return {};} });
-  const [showExpiringDocs, setShowExpiringDocs] = useState(false);
   const [driveLinks, setDriveLinks] = useState(() => {
     try { return JSON.parse(localStorage.getItem("drive_links")||"{}"); } catch { return {}; }
   });
@@ -472,9 +468,6 @@ export default function App() {
   const [driveLinkInput, setDriveLinkInput] = useState("");
   const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
   const [driveLinkLabel, setDriveLinkLabel] = useState("");
-  const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
-  const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
-  const [importModal, setImportModal] = useState(false);
   const [importResult, setImportResult] = useState(null); // {updated, notFound, rows}
   const [notifModal, setNotifModal] = useState(false);
   const [notifDays, setNotifDays] = useState(30); // null | {label, filter, fKey, color, icon}
@@ -699,61 +692,7 @@ export default function App() {
     setDriveLinks(prev => ({ ...prev, [id]: (prev[id]||[]).filter((_,i)=>i!==idx) }));
   };
 
-  const updateDriveLink = (id, idx, newLink) => {
-    setDriveLinks(prev => ({...prev, [id]: (prev[id]||[]).map((l,i)=>i===idx?{...l,...newLink}:l)}));
-  };
 
-  const getExpiringDocs = () => {
-    const now=new Date(); const result=[];
-    Object.entries(driveLinks).forEach(([id,links])=>{
-      links.forEach((link,idx)=>{
-        if(!link.expiryDate)return;
-        const days=Math.ceil((new Date(link.expiryDate)-now)/86400000);
-        if(days<=90){
-          const owner=records.find(r=>String(r.id)===id||r.iqamaNumber===id);
-          const compName=id==="company_anjal"?"انجال المشاعر":id==="company_delta"?"دلتا الماسية":id==="company_smart"?"البيوت الذكية":null;
-          result.push({id,idx,link,days,owner,compName});
-        }
-      });
-    });
-    return result.sort((a,b)=>a.days-b.days);
-  };
-
-  const notifyExpiringDocs = () => {
-    const docs=getExpiringDocs();
-    if(!docs.length){alert("✅ لا توجد مستندات قاربة على الانتهاء خلال 90 يوم");return;}
-    if("Notification" in window){
-      Notification.requestPermission().then(p=>{
-        if(p==="granted") docs.slice(0,5).forEach(d=>{
-          new Notification(`⚠️ ${d.link.label}`,{body:`${d.owner?.name||d.compName||"مستند"} — ينتهي خلال ${d.days<0?"منتهي":d.days+" يوم"}`});
-        });
-        else alert(docs.map(d=>`• ${d.link.label} (${d.owner?.name||d.compName}) — ${d.days<0?"منتهي":d.days+" يوم"}`).join("
-"));
-      });
-    }
-  };
-
-  const getCrData  = (compName) => ({...COMPANY_CR[compName]||{}, ...(customCr[compName]||{})});
-  const saveCrData = (compName, data) => setCustomCr(prev=>({...prev,[compName]:data}));
-
-  const handleRenew = () => {
-    if (!renewDate) { alert("يرجى إدخال تاريخ الانتهاء الجديد"); return; }
-    const today = new Date().toISOString().slice(0,10);
-    setRecords(records.map(r => r.id === renewModal.id
-      ? { ...r,
-          expiryDate: renewDate,
-          renewalStatus: "مكتمل",
-          lastRenewalDate: today,
-          lastRenewalNote: renewNote,
-        }
-      : r
-    ));
-    setRenewModal(null);
-    setRenewDate("");
-    setRenewNote("");
-  };
-
-  const inp={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
 
   // شاشة التحميل
   if (user === undefined) return (
