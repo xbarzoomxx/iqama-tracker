@@ -34,6 +34,7 @@ const CLASSIFICATION_REQUIREMENTS = {
       {title:"مهندس كهربائي",required:1},
       {title:"فني كهربائي",required:2},
       {title:"فني ميكانيكي",required:2},
+      {title:"فني هندسة إلكترونيات",required:1},
       {title:"عمالة",required:4},
     ],
   },
@@ -53,9 +54,12 @@ const matchJob = (empJob, reqTitle) => {
   if (r.includes("فني ميكان") && j.includes("فني") && j.includes("ميكان")) return true;
   if (r.includes("لحام") && j.includes("لحام")) return true;
   if (r.includes("عمالة") && (j.includes("عمال")||j.includes("عامل"))) return true;
+  // ميكانيكي مصاعد يُحتسب ضمن العمالة
+  if (r.includes("عمالة") && j.includes("ميكانيكي") && j.includes("مصاعد")) return true;
   if (r.includes("مهندس كهربائي") && j.includes("مهندس") && j.includes("كهرب")) return true;
   if (r.includes("فني كهربائي") && j.includes("فني") && j.includes("كهرب")) return true;
   if (r.includes("فني ميكانيكي") && j.includes("فني") && j.includes("ميكان")) return true;
+  if (r.includes("فني هندسة إلكترونيات") && j.includes("فني") && (j.includes("إلكترون")||j.includes("الكترون"))) return true;
   return false;
 };
 
@@ -67,12 +71,22 @@ const COMPANY_CR = {
     establishNumber:"13-1044947", type:"شركة ذات مسؤولية محدودة",
     status:"نشط", address:"مكة المكرمة - عبدالله خياط",
     email:"info@anjal.cc", manager:"حواء الزهراني",
+    facilityManager:"عمار حسن علي الحسن",
   },
   "دلتا الماسية": {
     name:"شركة دلتا الماسية للمصاعد",
     crNumber:"", unifiedNumber:"7016055357",
     type:"شركة ذات مسؤولية محدودة",
     status:"نشط", issueDate:"2019-10-10",
+    facilityManager:"عمار حسن علي الحسن",
+  },
+  "البيوت الذكية": {
+    name:"شركة البيوت الذكية للمراقبة الأمنية",
+    crNumber:"", unifiedNumber:"7002772726",
+    type:"شركة ذات مسؤولية محدودة",
+    status:"نشط", issueDate:"2018-03-22",
+    facilityManager:"عمار حسن علي الحسن",
+    note:"لا يوجد موظفون مسجلون",
   },
 };
 
@@ -107,6 +121,7 @@ const COMPANY_INFO = {
 const COMPANY_COLORS = {
   "انجال المشاعر": { bg:"#fdf0f0", text:"#6B1A1A", border:"#e8b4b4" },
   "دلتا الماسية":  { bg:"#fffbeb", text:"#b45309", border:"#fcd34d" },
+  "البيوت الذكية": { bg:"#f0f9ff", text:"#0369a1", border:"#bae6fd" },
 };
 
 const RELATION_ICONS = { زوجة:"💑", ابن:"👦", بنت:"👧" };
@@ -1690,10 +1705,15 @@ export default function App() {
           const COMPANY_IDS = {
             "انجال المشاعر": "company_anjal",
             "دلتا الماسية":  "company_delta",
+            "البيوت الذكية": "company_smart",
           };
           const COMPANY_DOCS = [
             "السجل التجاري","الترخيص التجاري","رخصة البلدية","شهادة الزكاة",
             "عقد التأسيس","الهوية الضريبية","رخصة المنشأة","وثيقة تأمين",
+          ];
+          const SMART_HOME_DOCS = [
+            "السجل التجاري","شهادة العضوية","مزاولة النشاط",
+            "رخصة المراقبة الأمنية","شهادة ضريبة القيمة المضافة",
           ];
           const EMP_DOCS = ["جواز السفر","تصريح العمل","عقد العمل","صورة شخصية","شهادة مهنية","تأشيرة","إقامة (نسخة)","أخرى"];
 
@@ -1732,7 +1752,8 @@ export default function App() {
                               {l:"الرقم الموحد",v:COMPANY_CR[compName].unifiedNumber},
                               {l:"نوع الكيان",v:COMPANY_CR[compName].type},
                               {l:"الحالة",v:COMPANY_CR[compName].status},
-                              {l:"المدير",v:COMPANY_CR[compName].manager||"—"},
+                              {l:"المدير العام",v:COMPANY_CR[compName].manager||"—"},
+                              {l:"مدير المنشأة",v:COMPANY_CR[compName].facilityManager||"—"},
                             ].map(x=>(
                               <div key={x.l}>
                                 <span style={{color:dm?"#a0a8bb":"#6b7280"}}>{x.l}: </span>
@@ -1746,7 +1767,7 @@ export default function App() {
                       <div style={{marginBottom:12}}>
                         <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",marginBottom:6}}>ملفات مقترحة:</div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                          {COMPANY_DOCS.map(doc=>{
+                          {(compName==="البيوت الذكية"?SMART_HOME_DOCS:COMPANY_DOCS).map(doc=>{
                             const exists=links.some(l=>l.label===doc);
                             return (
                               <span key={doc} style={{background:exists?(dm?"#081a12":"#f0fdf4"):(dm?"#1e222b":"#f9fafb"),color:exists?"#16a34a":(dm?"#a0a8bb":"#6b7280"),border:`1px solid ${exists?"#86efac":(dm?"#2a2f3d":"#e5e7eb")}`,padding:"3px 9px",borderRadius:12,fontSize:11,fontWeight:exists?700:400}}>
