@@ -1953,7 +1953,7 @@ export default function App() {
               {/* ── صف 1: حالة الإقامة + الشركة ── */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:0}}>
 
-                {/* حالة الإقامة - Donut */}
+                {/* حالة الإقامة */}
                 {selectedReports.has("status")&&<div style={card}>
                   <div style={titleStyle}>⏳ توزيع حالة الإقامة</div>
                   <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
@@ -1969,9 +1969,9 @@ export default function App() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </div>}
 
-                {/* الشركة - Bar */}
+                {/* الشركة */}
                 {selectedReports.has("company")&&<div style={card}>
                   <div style={titleStyle}>🏢 توزيع حسب الشركة</div>
                   {compData.map(d=>(
@@ -1987,7 +1987,6 @@ export default function App() {
                       </div>
                     </div>
                   ))}
-                  {/* موظف vs مرافق */}
                   <div style={{borderTop:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,paddingTop:12,marginTop:4,display:"flex",gap:16}}>
                     {[{l:"موظفون",v:employees.length,c:"#2563eb"},{l:"مرافقون",v:records.filter(r=>r.type==="مرافق").length,c:"#7c3aed"}].map(x=>(
                       <div key={x.l} style={{flex:1,background:dm?"#1e222b":"#f9fafb",borderRadius:8,padding:"10px",textAlign:"center",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`}}>
@@ -1996,7 +1995,6 @@ export default function App() {
                       </div>
                     ))}
                   </div>
-                </div>
                 </div>}
               </div>
 
@@ -2006,37 +2004,128 @@ export default function App() {
                 <div style={{display:"grid",gap:10}}>
                   {natData.map(([nat,cnt],i)=>(
                     <div key={nat} style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:28,height:28,borderRadius:6,background:natColors[i%natColors.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,flexShrink:0}}>
-                        {i+1}
-                      </div>
+                      <div style={{width:28,height:28,borderRadius:6,background:natColors[i%natColors.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,flexShrink:0}}>{i+1}</div>
                       <div style={{flex:1,fontSize:13,fontWeight:600,color:dm?"#f0f2f7":"#374151"}}>{nat}</div>
                       <div style={{width:"45%",background:dm?"#1e222b":"#f3f4f6",borderRadius:6,height:22,overflow:"hidden"}}>
-                        <div style={{width:`${(cnt/records.length*100).toFixed(1)}%`,height:"100%",background:natColors[i%natColors.length],borderRadius:6,minWidth:cnt>0?24:0,transition:"width 0.6s"}}/>
+                        <div style={{width:`${(cnt/records.length*100).toFixed(1)}%`,height:"100%",background:natColors[i%natColors.length],borderRadius:6,minWidth:cnt>0?24:0}}/>
                       </div>
                       <div style={{fontWeight:800,color:natColors[i%natColors.length],fontSize:14,minWidth:30,textAlign:"right"}}>{cnt}</div>
                       <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",minWidth:36}}>({Math.round(cnt/records.length*100)}%)</div>
                     </div>
                   ))}
                 </div>
-              </div>
-
               </div>}
-              {/* ── صف 3: المهن ── */
-              <div style={card}>
-                <div style={titleStyle}>💼 أكثر المهن شيوعاً</div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
-                  {jobData.map(([job,cnt],i)=>(
-                    <div key={job} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,padding:"12px 14px",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-                      <div style={{flex:1,fontSize:12,fontWeight:600,color:dm?"#f0f2f7":"#374151"}}>{job}</div>
-                      <div style={{background:natColors[i%natColors.length],color:"#fff",borderRadius:20,padding:"2px 10px",fontSize:12,fontWeight:800,flexShrink:0}}>{cnt}</div>
+
+              {/* ── صف 3: المهن التفصيلي ── */}
+              {selectedReports.has("jobs")&&(()=>{
+                const allJobMap={};
+                const empOnly=records.filter(r=>r.type!=="مرافق");
+                empOnly.forEach(r=>{const j=(r.jobTitle||r.notes||"غير محدد").trim();if(j)allJobMap[j]=(allJobMap[j]||0)+1;});
+                const allJobsSorted=Object.entries(allJobMap).sort((a,b)=>b[1]-a[1]);
+                const byJob={};
+                empOnly.forEach(r=>{const j=(r.jobTitle||r.notes||"غير محدد").trim();if(!byJob[j])byJob[j]=[];byJob[j].push(r);});
+                return (
+                  <div style={card}>
+                    <div style={{...titleStyle,justifyContent:"space-between",flexWrap:"wrap"}}>
+                      <span>💼 تقرير المهن التفصيلي</span>
+                      <div style={{display:"flex",gap:8,fontSize:12}}>
+                        <span style={{background:dm?"#1e222b":"#eff6ff",color:dm?"#93c5fd":"#2563eb",padding:"3px 12px",borderRadius:10,fontWeight:600}}>{allJobsSorted.length} مهنة</span>
+                        <span style={{background:dm?"#1e222b":"#f0fdf4",color:dm?"#6ee7b7":"#16a34a",padding:"3px 12px",borderRadius:10,fontWeight:600}}>{empOnly.length} موظف</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div style={{display:"grid",gap:10}}>
+                      {allJobsSorted.map(([job,cnt],i)=>{
+                        const emps=byJob[job]||[];
+                        const pct=(cnt/empOnly.length*100).toFixed(0);
+                        return (
+                          <div key={job} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,overflow:"hidden"}}>
+                            <div style={{padding:"10px 14px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                              <div style={{width:28,height:28,borderRadius:6,background:natColors[i%natColors.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,flexShrink:0}}>{i+1}</div>
+                              <div style={{flex:1}}>
+                                <div style={{fontWeight:700,fontSize:13,color:dm?"#f0f2f7":"#1e3a5f"}}>{job}</div>
+                                <div style={{display:"flex",gap:8,marginTop:3}}>
+                                  <div style={{background:dm?"#161920":"#e5e7eb",borderRadius:20,height:6,flex:1,overflow:"hidden"}}>
+                                    <div style={{width:`${pct}%`,height:"100%",background:natColors[i%natColors.length],borderRadius:20,minWidth:cnt>0?6:0}}/>
+                                  </div>
+                                  <span style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",whiteSpace:"nowrap"}}>{cnt} ({pct}%)</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{padding:"8px 14px 10px",borderTop:`1px dashed ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",flexWrap:"wrap",gap:6}}>
+                              {emps.map(r=>{
+                                const sc=STATUS_COLORS[getStatus(r)];
+                                return <span key={r.id} style={{background:sc.bg,color:sc.text,border:`1px solid ${sc.border}`,padding:"2px 9px",borderRadius:12,fontSize:11,fontWeight:600}}>{r.name}</span>;
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
-              </div>}
-              {/* ── صف 4: تقويم الانتهاء الشهري ── */
-              <div style={card}>
+              {/* ── صف 3.5: داخل وخارج المملكة ── */}
+              {selectedReports.has("location")&&(()=>{
+                const inside  = records.filter(r=>r.outsideKingdom!=="نعم");
+                const outside = records.filter(r=>r.outsideKingdom==="نعم");
+                const insideEmp  = inside.filter(r=>r.type!=="مرافق");
+                const outsideEmp = outside.filter(r=>r.type!=="مرافق");
+                return (
+                  <div style={card}>
+                    <div style={titleStyle}>🌍 داخل وخارج المملكة</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
+                      {[
+                        {label:"🏠 داخل المملكة",count:inside.length,emp:insideEmp.length,dep:inside.length-insideEmp.length,color:"#16a34a",bg:dm?"#081a12":"#f0fdf4",border:dm?"#166534":"#86efac"},
+                        {label:"✈️ خارج المملكة",count:outside.length,emp:outsideEmp.length,dep:outside.length-outsideEmp.length,color:"#dc2626",bg:dm?"#2a1515":"#fef2f2",border:dm?"#7f1d1d":"#fca5a5"},
+                      ].map(c=>(
+                        <div key={c.label} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:12,padding:"16px",textAlign:"center"}}>
+                          <div style={{fontSize:32,fontWeight:900,color:c.color}}>{c.count}</div>
+                          <div style={{fontSize:14,fontWeight:700,color:c.color,marginTop:4}}>{c.label}</div>
+                          <div style={{fontSize:12,color:dm?"#a0a8bb":"#6b7280",marginTop:6}}>({(records.length>0?(c.count/records.length*100):0).toFixed(1)}%)</div>
+                          <div style={{display:"flex",justifyContent:"center",gap:10,marginTop:8,fontSize:11}}>
+                            <span style={{background:dm?"#1e222b":"rgba(255,255,255,0.6)",padding:"2px 8px",borderRadius:8,color:dm?"#a0a8bb":"#374151"}}>👤 {c.emp} موظف</span>
+                            <span style={{background:dm?"#1e222b":"rgba(255,255,255,0.6)",padding:"2px 8px",borderRadius:8,color:dm?"#a0a8bb":"#374151"}}>👨‍👩‍👧 {c.dep} مرافق</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {outside.length>0&&(
+                      <>
+                        <div style={{fontWeight:700,fontSize:13,color:dm?"#f0f2f7":"#dc2626",marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+                          ✈️ المتواجدون خارج المملكة
+                          <span style={{background:dm?"#2a1515":"#fef2f2",color:"#dc2626",padding:"2px 10px",borderRadius:10,fontSize:12}}>{outside.length}</span>
+                        </div>
+                        <div style={{display:"grid",gap:8}}>
+                          {outside.map(r=>{
+                            const st=getStatus(r),sc=STATUS_COLORS[st];
+                            const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                            return (
+                              <div key={r.id} style={{background:dm?"#1e222b":"#fafafa",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,borderRight:`4px solid ${sc.border}`,borderRadius:10,padding:"10px 14px",display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",justifyContent:"space-between"}}>
+                                <div>
+                                  <div style={{fontWeight:600,fontSize:13,color:dm?"#f0f2f7":"#1e3a5f"}}>{r.name}</div>
+                                  <div style={{display:"flex",gap:8,fontSize:11,color:dm?"#a0a8bb":"#6b7280",marginTop:3,flexWrap:"wrap"}}>
+                                    <span>🪪 {r.iqamaNumber}</span>
+                                    <span>🌍 {r.nationality}</span>
+                                    {(r.jobTitle||r.notes)&&r.type!=="مرافق"&&<span>💼 {r.jobTitle||r.notes}</span>}
+                                  </div>
+                                </div>
+                                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                                  <span style={{background:cc.bg,color:cc.text,border:`1px solid ${cc.border}`,padding:"2px 8px",borderRadius:8,fontSize:11,fontWeight:600}}>{r.company}</span>
+                                  <span style={{background:sc.bg,color:sc.text,border:`1px solid ${sc.border}`,padding:"2px 8px",borderRadius:8,fontSize:11,fontWeight:600}}>{st}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* ── صف 4: تقويم الانتهاء الشهري ── */}
+              {selectedReports.has("calendar")&&<div style={card}>
                 <div style={titleStyle}>📅 تقويم الإقامات المنتهية شهرياً (12 شهر قادم)</div>
                 <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,overflowX:"auto",paddingBottom:4}}>
                   {monthlyData.map((d,i)=>{
@@ -2047,7 +2136,7 @@ export default function App() {
                     return (
                       <div key={i} style={{flex:1,minWidth:44,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                         {d.count>0&&<div style={{fontSize:11,fontWeight:700,color:barColor}}>{d.count}</div>}
-                        <div style={{width:"100%",height:`${h}px`,background:barColor,borderRadius:"6px 6px 0 0",minHeight:d.count>0?8:2,transition:"height 0.4s"}}/>
+                        <div style={{width:"100%",height:`${h}px`,background:barColor,borderRadius:"6px 6px 0 0",minHeight:d.count>0?8:2}}/>
                         <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280",textAlign:"center",whiteSpace:"nowrap"}}>{d.label}</div>
                       </div>
                     );
@@ -2061,11 +2150,10 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-              </div>
-
               </div>}
-              {/* ── صف 5: التكاليف الشهرية ── */
-              <div style={card}>
+
+              {/* ── صف 5: التكاليف الشهرية ── */}
+              {selectedReports.has("costs")&&<div style={card}>
                 <div style={titleStyle}>💰 تكاليف التجديد المتوقعة شهرياً (السنة القادمة)</div>
                 <div style={{display:"flex",gap:6,alignItems:"flex-end",height:150,overflowX:"auto",paddingBottom:4}}>
                   {monthlyCostData.map((d,i)=>{
@@ -2073,7 +2161,7 @@ export default function App() {
                     return (
                       <div key={i} style={{flex:1,minWidth:44,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                         {d.cost>0&&<div style={{fontSize:9,fontWeight:700,color:"#16a34a",textAlign:"center"}}>{(d.cost/1000).toFixed(1)}k</div>}
-                        <div style={{width:"100%",height:`${h}px`,background:d.cost>10000?"#dc2626":d.cost>5000?"#d97706":"#16a34a",borderRadius:"6px 6px 0 0",minHeight:d.cost>0?8:2,transition:"height 0.4s"}}/>
+                        <div style={{width:"100%",height:`${h}px`,background:d.cost>10000?"#dc2626":d.cost>5000?"#d97706":"#16a34a",borderRadius:"6px 6px 0 0",minHeight:d.cost>0?8:2}}/>
                         <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280",textAlign:"center",whiteSpace:"nowrap"}}>{d.label}</div>
                       </div>
                     );
@@ -2083,11 +2171,10 @@ export default function App() {
                   <span style={{fontSize:13,color:dm?"#6ee7b7":"#15803d",fontWeight:600}}>إجمالي التكاليف المتوقعة للسنة القادمة</span>
                   <span style={{fontSize:18,fontWeight:900,color:dm?"#6ee7b7":"#15803d"}}>{fmt(monthlyCostData.reduce((s,d)=>s+d.cost,0))}</span>
                 </div>
-              </div>
-
               </div>}
-              {/* ── صف 6: الإقامات المجددة ── */
-              <div style={card}>
+
+              {/* ── صف 6: الإقامات المجددة ── */}
+              {selectedReports.has("renewed")&&<div style={card}>
                 <div style={titleStyle}>✅ الإقامات التي تم تجديدها</div>
                 {renewedRecords.length===0?(
                   <div style={{textAlign:"center",padding:"30px 0",color:dm?"#a0a8bb":"#6b7280"}}>
@@ -2124,134 +2211,18 @@ export default function App() {
                             </div>
                             <div style={{textAlign:"left"}}>
                               <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>تاريخ التجديد</div>
-                              <div style={{fontWeight:700,fontSize:13,color:dm?"#6ee7b7":"#15803d"}}>
-                                {new Date(r.lastRenewalDate).toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"})}
-                              </div>
-                              <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>
-                                ينتهي: {r.expiryDate?new Date(r.expiryDate).toLocaleDateString("ar-SA"):"—"}
-                              </div>
+                              <div style={{fontWeight:700,fontSize:13,color:dm?"#6ee7b7":"#15803d"}}>{new Date(r.lastRenewalDate).toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"})}</div>
+                              <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>ينتهي: {r.expiryDate?new Date(r.expiryDate).toLocaleDateString("ar-SA"):"—"}</div>
                             </div>
-                            <div style={{fontWeight:700,color:dm?"#6ee7b7":"#15803d",fontSize:13}}>
-                              {fmt(r.type!=="مرافق"?2588:1200)}
-                            </div>
+                            <div style={{fontWeight:700,color:dm?"#6ee7b7":"#15803d",fontSize:13}}>{fmt(r.type!=="مرافق"?2588:1200)}</div>
                           </div>
                         );
                       })}
                     </div>
                   </>
                 )}
-              </div>
-            </div>
-          );
-        })()}
+              </div>}
 
-        {/* ══════ النافذة المنبثقة ══════ */}
-        {modalCard && (() => {
-          // جلب السجلات المناسبة للبطاقة
-          const getModalRecords = () => {
-            if (!modalCard.fKey) return records; // الإجمالي
-            if (modalCard.fKey === "status") return records.filter(r => getStatus(r) === modalCard.filter);
-            if (modalCard.fKey === "company") return records.filter(r => r.company === modalCard.filter);
-            if (modalCard.fKey === "type") {
-              if (modalCard.filter === "موظف") return records.filter(r => r.type !== "مرافق");
-              return records.filter(r => r.type === "مرافق");
-            }
-            return [];
-          };
-
-          const modalRecords = getModalRecords().sort((a,b) => {
-            const pa = getStatus(a)==="منتهية"?0:getStatus(a)==="تنتهي قريباً"?1:2;
-            const pb = getStatus(b)==="منتهية"?0:getStatus(b)==="تنتهي قريباً"?1:2;
-            return pa-pb || getDaysLeft(a.expiryDate)-getDaysLeft(b.expiryDate);
-          });
-
-          const dm = darkMode;
-
-          return (
-            <div
-              onClick={()=>setModalCard(null)}
-              style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
-              <div
-                onClick={e=>e.stopPropagation()}
-                style={{background:dm?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:820,maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
-
-                {/* هيدر المودال */}
-                <div style={{background:dm?"linear-gradient(135deg,#3d1000,#6B1A1A)":"linear-gradient(135deg,#6B1A1A,#F5A800)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <span style={{fontSize:28}}>{modalCard.icon}</span>
-                    <div>
-                      <h2 style={{margin:0,fontSize:18,fontWeight:800,color:"#fff"}}>{modalCard.label}</h2>
-                      <div style={{fontSize:12,color:"rgba(255,255,255,0.8)",marginTop:2}}>{modalRecords.length} سجل</div>
-                    </div>
-                  </div>
-                  <button onClick={()=>setModalCard(null)}
-                    style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:34,height:34,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>
-                    ✕
-                  </button>
-                </div>
-
-                {/* المحتوى */}
-                <div style={{overflowY:"auto",padding:"16px 20px",flex:1}}>
-                  {modalRecords.length === 0 ? (
-                    <div style={{textAlign:"center",padding:40,color:dm?"#a0a8bb":"#6b7280"}}>
-                      <div style={{fontSize:44}}>📭</div>
-                      <p style={{marginTop:8}}>لا توجد سجلات</p>
-                    </div>
-                  ) : modalRecords.map((r,i) => {
-                    const st = getStatus(r);
-                    const sc = STATUS_COLORS[st];
-                    const days = r.expiryDate ? getDaysLeft(r.expiryDate) : null;
-                    const cc = COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
-                    const isDependent = r.type === "مرافق";
-                    // رب الأسرة إذا كان مرافقاً
-                    const headRecord = isDependent ? records.find(e=>e.iqamaNumber===r.familyHeadId) : null;
-
-                    return (
-                      <div key={r.id}
-                        style={{background:dm?"#1e222b":"#f9fafb",borderRadius:12,padding:"14px 16px",marginBottom:10,borderRight:`4px solid ${sc.border}`,display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
-
-                        {/* الاسم والتفاصيل */}
-                        <div style={{flex:"1 1 200px"}}>
-                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:5}}>
-                            <span style={{fontSize:16}}>{isDependent?(RELATION_ICONS[r.relation]||"👤"):r.gender==="أنثى"?"👩":"👤"}</span>
-                            <strong style={{fontSize:14,color:dm?"#f0f2f7":"#1e3a5f"}}>{r.name}</strong>
-                            {isDependent&&<span style={{background:"#f3e8ff",color:"#7c3aed",padding:"1px 8px",borderRadius:8,fontSize:11,fontWeight:600}}>{r.relation}</span>}
-                            <span style={{background:cc.bg,color:cc.text,border:`1px solid ${cc.border}`,padding:"1px 7px",borderRadius:8,fontSize:11,fontWeight:600}}>{r.company}</span>
-                            {r.outsideKingdom==="نعم"&&<span style={{background:"#fef3c7",color:"#d97706",padding:"1px 7px",borderRadius:8,fontSize:11}}>✈️ خارج</span>}
-                          </div>
-                          <div style={{display:"flex",gap:12,fontSize:12,color:dm?"#a0a8bb":"#6b7280",flexWrap:"wrap"}}>
-                            <span>🪪 {r.iqamaNumber}</span>
-                            {r.nationality&&<span>🌍 {r.nationality}</span>}
-                            {r.jobTitle&&!isDependent&&<span>💼 {r.jobTitle}</span>}
-                            {headRecord&&<span style={{color:dm?"#c4b5fd":"#7c3aed"}}>👤 رب الأسرة: {headRecord.name}</span>}
-                          </div>
-                        </div>
-
-                        {/* الأيام والحالة */}
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,textAlign:"center"}}>
-                          {days!==null && (
-                            <div style={{textAlign:"center"}}>
-                              <div style={{fontWeight:800,fontSize:20,color:sc.text,lineHeight:1}}>{days<0?Math.abs(days):days}</div>
-                              <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280"}}>{days<0?"يوم منتهي":"يوم متبقي"}</div>
-                              <div style={{fontSize:11,color:dm?"#a0a8bb":"#9ca3af"}}>{new Date(r.expiryDate).toLocaleDateString("ar-SA")}</div>
-                            </div>
-                          )}
-                          <span style={{background:sc.bg,border:`1px solid ${sc.border}`,color:sc.text,padding:"3px 10px",borderRadius:14,fontSize:12,fontWeight:700}}>{st}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* فوتر */}
-                <div style={{padding:"12px 20px",borderTop:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0,background:dm?"#111419":"#f9fafb"}}>
-                  <span style={{fontSize:12,color:dm?"#a0a8bb":"#6b7280"}}>اضغط خارج النافذة للإغلاق</span>
-                  <button onClick={()=>setModalCard(null)}
-                    style={{background:"#8B2500",color:"#fff",border:"none",borderRadius:8,padding:"7px 20px",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
-                    إغلاق
-                  </button>
-                </div>
-              </div>
             </div>
           );
         })()}
