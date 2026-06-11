@@ -846,49 +846,97 @@ export default function App() {
         {activeTab==="list"&&(
           <>
             <div style={{background:darkMode?"#161920":"#fff",borderRadius:11,padding:"13px 16px",marginBottom:14,boxShadow:darkMode?"0 2px 7px rgba(0,0,0,0.6)":"0 2px 7px rgba(0,0,0,0.06)",display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              {/* بحث */}
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 بحث بالاسم، الرقم، المهنة..."
                 style={{...inp,flex:"1 1 180px",maxWidth:260}}/>
-              <select value={filterCompany} onChange={e=>setFilterCompany(e.target.value)} style={{...inp,width:"auto"}}>
-                <option>الكل</option><option>انجال المشاعر</option><option>دلتا الماسية</option>
+
+              {/* فلتر الشركة */}
+              {(()=>{
+                const isActive = filterCompany!=="الكل";
+                return (
+                  <select value={filterCompany} onChange={e=>setFilterCompany(e.target.value)}
+                    style={{...inp,width:"auto",fontWeight:isActive?700:400,
+                      border:`1.5px solid ${isActive?"#6B1A1A":(darkMode?"#2a2f3d":"#d1d5db")}`,
+                      color:isActive?"#6B1A1A":(darkMode?"#f0f2f7":"#374151"),
+                      background:isActive?(darkMode?"#2d0f0f":"#fdf0f0"):(darkMode?"#161920":"#fff")}}>
+                    <option value="الكل">🏢 الشركة</option>
+                    <option>انجال المشاعر</option>
+                    <option>دلتا الماسية</option>
+                    <option>البيوت الذكية</option>
+                  </select>
+                );
+              })()}
+
+              {/* فلتر النوع */}
+              {(()=>{
+                const isActive = filterType!=="الكل";
+                return (
+                  <select value={filterType} onChange={e=>setFilterType(e.target.value)}
+                    style={{...inp,width:"auto",fontWeight:isActive?700:400,
+                      border:`1.5px solid ${isActive?"#2563eb":(darkMode?"#2a2f3d":"#d1d5db")}`,
+                      color:isActive?"#2563eb":(darkMode?"#f0f2f7":"#374151"),
+                      background:isActive?(darkMode?"#0f1a2e":"#eff6ff"):(darkMode?"#161920":"#fff")}}>
+                    <option value="الكل">👤 نوع السجل</option>
+                    <option>موظف</option>
+                    <option>مرافق</option>
+                  </select>
+                );
+              })()}
+
+              {/* فلتر الحالة */}
+              {(()=>{
+                const isActive = filterStatus!=="الكل";
+                const statusColors = {"سارية":"#16a34a","تنتهي قريباً":"#d97706","منتهية":"#dc2626","قيد التجديد":"#2563eb","مرافق":"#7c3aed"};
+                const c = statusColors[filterStatus]||"#16a34a";
+                return (
+                  <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}
+                    style={{...inp,width:"auto",fontWeight:isActive?700:400,
+                      border:`1.5px solid ${isActive?c:(darkMode?"#2a2f3d":"#d1d5db")}`,
+                      color:isActive?c:(darkMode?"#f0f2f7":"#374151"),
+                      background:isActive?(darkMode?"#1a1a1a":"#f9fafb"):(darkMode?"#161920":"#fff")}}>
+                    <option value="الكل">⏳ حالة الإقامة</option>
+                    <option>سارية</option>
+                    <option>تنتهي قريباً</option>
+                    <option>منتهية</option>
+                    <option>قيد التجديد</option>
+                    <option>مرافق</option>
+                  </select>
+                );
+              })()}
+
+              {/* فلتر الجنسية */}
+              {(()=>{
+                const isActive = filterNationality!=="الكل";
+                return (
+                  <select value={filterNationality} onChange={e=>setFilterNationality(e.target.value)}
+                    style={{...inp,width:"auto",fontWeight:isActive?700:400,
+                      border:`1.5px solid ${isActive?"#0891b2":(darkMode?"#2a2f3d":"#d1d5db")}`,
+                      color:isActive?"#0891b2":(darkMode?"#f0f2f7":"#374151"),
+                      background:isActive?(darkMode?"#0a1f2e":"#f0f9ff"):(darkMode?"#161920":"#fff")}}>
+                    <option value="الكل">🌍 الجنسية</option>
+                    {nationalities.filter(n=>n!=="الكل").map(n=><option key={n}>{n}</option>)}
+                  </select>
+                );
+              })()}
+
+              {/* الترتيب */}
+              <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
+                style={{...inp,width:"auto",color:darkMode?"#f0f2f7":"#374151"}}>
+                <option value="expiryDate">↕️ تاريخ الانتهاء</option>
+                <option value="name">↕️ الاسم</option>
+                <option value="company">↕️ الشركة</option>
               </select>
-              <select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{...inp,width:"auto"}}>
-                <option>الكل</option><option>موظف</option><option>مرافق</option>
-              </select>
-              <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={{...inp,width:"auto"}}>
-                {["الكل","سارية","تنتهي قريباً","منتهية","قيد التجديد","مرافق"].map(s=><option key={s}>{s}</option>)}
-              </select>
-              <select value={filterNationality} onChange={e=>setFilterNationality(e.target.value)} style={{...inp,width:"auto"}}>
-                {nationalities.map(n=><option key={n}>{n}</option>)}
-              </select>
-              <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{...inp,width:"auto"}}>
-                <option value="expiryDate">ترتيب: تاريخ الانتهاء</option>
-                <option value="name">ترتيب: الاسم</option>
-                <option value="company">ترتيب: الشركة</option>
-              </select>
+
+              {/* إحصاء + إعادة ضبط */}
               <span style={{color:darkMode?"#a0a8bb":"#6b7280",fontSize:12,whiteSpace:"nowrap"}}>{filtered.length} سجل</span>
-              {/* زر إظهار/إخفاء الشرح */}
-              <button onClick={()=>setShowFilterHelp(h=>!h)}
-                style={{background:"none",border:`1px solid ${darkMode?"#2a2f3d":"#dbeafe"}`,color:darkMode?"#93c5fd":"#2563eb",borderRadius:7,padding:"3px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                💡 دليل
-              </button>
+              {(filterCompany!=="الكل"||filterType!=="الكل"||filterStatus!=="الكل"||filterNationality!=="الكل"||search)&&(
+                <button onClick={()=>{setFilterCompany("الكل");setFilterType("الكل");setFilterStatus("الكل");setFilterNationality("الكل");setSearch("");}}
+                  style={{background:"#fee2e2",color:"#dc2626",border:"1px solid #fca5a5",borderRadius:7,padding:"3px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",flexShrink:0,fontWeight:700}}>
+                  ✕ مسح
+                </button>
+              )}
             </div>
-            {showFilterHelp&&(
-              <div style={{background:darkMode?"#1e222b":"#f0f9ff",border:`1px solid ${darkMode?"#2a2f3d":"#bae6fd"}`,borderRadius:"0 0 10px 10px",padding:"10px 16px",marginTop:-14,marginBottom:14,display:"flex",flexWrap:"wrap",gap:"6px 16px"}}>
-                {[
-                  {label:"🔍 البحث",     desc:"اسم أو رقم إقامة أو مهنة"},
-                  {label:"🏢 الشركة",    desc:"فلترة حسب الشركة"},
-                  {label:"👤 النوع",     desc:"موظف أو مرافق"},
-                  {label:"⏳ الحالة",    desc:"سارية / تنتهي قريباً (30 يوم) / منتهية"},
-                  {label:"🌍 الجنسية",  desc:"فلترة حسب الجنسية"},
-                  {label:"↕️ الترتيب",  desc:"حسب التاريخ أو الاسم أو الشركة"},
-                ].map(f=>(
-                  <div key={f.label} style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
-                    <span style={{fontWeight:700,color:darkMode?"#93c5fd":"#2563eb"}}>{f.label}</span>
-                    <span style={{color:darkMode?"#a0a8bb":"#6b7280"}}>— {f.desc}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+
 
 
             {showForm&&(
