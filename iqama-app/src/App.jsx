@@ -448,6 +448,12 @@ export default function App() {
   const [calcStatusFilter, setCalcStatusFilter] = useState("all"); // all | expired | soon | valid
   const [calcBacklogOnly, setCalcBacklogOnly] = useState(false);
   const [showFilterHelp, setShowFilterHelp] = useState(false);
+  const [editCrModal, setEditCrModal]   = useState(null); // {compName} - تعديل السجل التجاري
+  const [editCrData, setEditCrData]     = useState({});
+  const [customCr, setCustomCr]         = useState(() => { try { return JSON.parse(localStorage.getItem("custom_cr")||"{}"); } catch{return{};} });
+  const [editLinkModal, setEditLinkModal] = useState(null); // {id, linkIdx}
+  const [editLinkData, setEditLinkData]   = useState({label:"", url:"", expiryDate:""});
+  const [showExpiringDocs, setShowExpiringDocs] = useState(false);
   const [selectedReports, setSelectedReports] = useState(new Set(["status","company","nationality","jobs","location","calendar","costs","renewed"]));
   const [showExportReports, setShowExportReports] = useState(false); // وضع المتأخر فقط
   const [darkMode, setDarkMode] = useState(false);
@@ -455,12 +461,19 @@ export default function App() {
   const [renewModal, setRenewModal] = useState(null); // {record} أو null
   const [renewDate, setRenewDate] = useState("");
   const [renewNote, setRenewNote] = useState("");
+  const [editCrModal, setEditCrModal] = useState(null); // {compName, data}
+  const [editLinkModal, setEditLinkModal] = useState(null); // {id, index, link}
+  const [customCr, setCustomCr]   = useState(() => { try{return JSON.parse(localStorage.getItem("custom_cr")||"{}");}catch{return {};} });
+  const [showExpiringDocs, setShowExpiringDocs] = useState(false);
   const [driveLinks, setDriveLinks] = useState(() => {
     try { return JSON.parse(localStorage.getItem("drive_links")||"{}"); } catch { return {}; }
   });
   const [driveModal, setDriveModal] = useState(null); // {type:"company"|"employee", id, name}
   const [driveLinkInput, setDriveLinkInput] = useState("");
+  const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
   const [driveLinkLabel, setDriveLinkLabel] = useState("");
+  const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
+  const [driveLinkExpiry, setDriveLinkExpiry] = useState("");
   const [importModal, setImportModal] = useState(false);
   const [importResult, setImportResult] = useState(null); // {updated, notFound, rows}
   const [notifModal, setNotifModal] = useState(false);
@@ -482,6 +495,8 @@ export default function App() {
 
   useEffect(() => { if(records.length>0) localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }, [records]);
   useEffect(() => { localStorage.setItem("drive_links", JSON.stringify(driveLinks)); }, [driveLinks]);
+  useEffect(() => { localStorage.setItem("custom_cr", JSON.stringify(customCr)); }, [customCr]);
+  useEffect(() => { localStorage.setItem("custom_cr", JSON.stringify(customCr)); }, [customCr]);
 
   const nationalities = ["الكل",...Array.from(new Set(records.map(r=>r.nationality).filter(Boolean))).sort()];
 
@@ -616,17 +631,110 @@ export default function App() {
     }
   };
 
+  // ── دوال تعديل السجل التجاري ──
+  const getCrData = (compName) => ({ ...COMPANY_CR[compName], ...(customCr[compName]||{}) });
+
+  const saveCrData = (compName, data) => {
+    setCustomCr(prev => ({ ...prev, [compName]: data }));
+    setEditCrModal(null);
+  };
+
+  // ── تعديل رابط Drive (اسم + تاريخ انتهاء) ──
+  const updateDriveLink = (id, idx, newData) => {
+    setDriveLinks(prev => ({
+      ...prev,
+      [id]: (prev[id]||[]).map((l,i) => i===idx ? {...l,...newData} : l)
+    }));
+    setEditLinkModal(null);
+  };
+
+  // ── المستندات التي تنتهي قريباً (خلال 90 يوم) ──
+  const getExpiringDocs = () => {
+    const results = [];
+    const today = new Date();
+    Object.entries(driveLinks).forEach(([id, links]) => {
+      links.forEach((link, idx) => {
+        if (!link.expiryDate) return;
+        const exp = new Date(link.expiryDate);
+        const days = Math.ceil((exp - today) / 86400000);
+        if (days <= 90) {
+          // إيجاد صاحب الملف
+          const rec = records.find(r => r.id === Number(id));
+          const compName = Object.keys({company_anjal:"انجال المشاعر",company_delta:"دلتا الماسية",company_smart:"البيوت الذكية"}).find(k => k===id);
+          const ownerName = rec ? rec.name : compName ? {company_anjal:"انجال المشاعر",company_delta:"دلتا الماسية",company_smart:"البيوت الذكية"}[id] : id;
+          results.push({ id, idx, link, days, ownerName });
+        }
+      });
+    });
+    return results.sort((a,b) => a.days - b.days);
+  };
+
+  // ── إشعار المستندات المنتهية ──
+  const notifyExpiringDocs = async () => {
+    const docs = getExpiringDocs();
+    if (!("Notification" in window)) { alert("متصفحك لا يدعم الإشعارات"); return; }
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") {
+      if (docs.length === 0) {
+        new Notification("✅ المستندات", { body: "لا توجد مستندات تنتهي خلال 90 يوم" });
+      } else {
+        docs.forEach(d => {
+          new Notification(d.days < 0 ? "❌ مستند منتهي" : "⚠️ مستند قريب الانتهاء", {
+            body: `${d.link.label} — ${d.ownerName} — ${d.days < 0 ? "منتهي منذ "+Math.abs(d.days)+" يوم" : "ينتهي بعد "+d.days+" يوم"}`,
+          });
+        });
+      }
+    }
+  };
+
   // ── دوال Google Drive ──
   const getDriveLinks = (id) => driveLinks[id] || [];
   const addDriveLink  = (id) => {
     if (!driveLinkInput.trim()) return;
-    const link = { url: driveLinkInput.trim(), label: driveLinkLabel.trim()||"ملف Drive", addedAt: new Date().toISOString().slice(0,10) };
+    const link = { url: driveLinkInput.trim(), label: driveLinkLabel.trim()||"ملف Drive", addedAt: new Date().toISOString().slice(0,10), expiryDate: driveLinkExpiry||"" };
     setDriveLinks(prev => ({ ...prev, [id]: [...(prev[id]||[]), link] }));
-    setDriveLinkInput(""); setDriveLinkLabel("");
+    setDriveLinkInput(""); setDriveLinkLabel(""); setDriveLinkExpiry("");
   };
   const removeDriveLink = (id, idx) => {
     setDriveLinks(prev => ({ ...prev, [id]: (prev[id]||[]).filter((_,i)=>i!==idx) }));
   };
+
+  const updateDriveLink = (id, idx, newLink) => {
+    setDriveLinks(prev => ({...prev, [id]: (prev[id]||[]).map((l,i)=>i===idx?{...l,...newLink}:l)}));
+  };
+
+  const getExpiringDocs = () => {
+    const now=new Date(); const result=[];
+    Object.entries(driveLinks).forEach(([id,links])=>{
+      links.forEach((link,idx)=>{
+        if(!link.expiryDate)return;
+        const days=Math.ceil((new Date(link.expiryDate)-now)/86400000);
+        if(days<=90){
+          const owner=records.find(r=>String(r.id)===id||r.iqamaNumber===id);
+          const compName=id==="company_anjal"?"انجال المشاعر":id==="company_delta"?"دلتا الماسية":id==="company_smart"?"البيوت الذكية":null;
+          result.push({id,idx,link,days,owner,compName});
+        }
+      });
+    });
+    return result.sort((a,b)=>a.days-b.days);
+  };
+
+  const notifyExpiringDocs = () => {
+    const docs=getExpiringDocs();
+    if(!docs.length){alert("✅ لا توجد مستندات قاربة على الانتهاء خلال 90 يوم");return;}
+    if("Notification" in window){
+      Notification.requestPermission().then(p=>{
+        if(p==="granted") docs.slice(0,5).forEach(d=>{
+          new Notification(`⚠️ ${d.link.label}`,{body:`${d.owner?.name||d.compName||"مستند"} — ينتهي خلال ${d.days<0?"منتهي":d.days+" يوم"}`});
+        });
+        else alert(docs.map(d=>`• ${d.link.label} (${d.owner?.name||d.compName}) — ${d.days<0?"منتهي":d.days+" يوم"}`).join("
+"));
+      });
+    }
+  };
+
+  const getCrData  = (compName) => ({...COMPANY_CR[compName]||{}, ...(customCr[compName]||{})});
+  const saveCrData = (compName, data) => setCustomCr(prev=>({...prev,[compName]:data}));
 
   const handleRenew = () => {
     if (!renewDate) { alert("يرجى إدخال تاريخ الانتهاء الجديد"); return; }
@@ -1026,7 +1134,7 @@ export default function App() {
                                 </button>
                               )}
                               <button onClick={()=>{setRenewModal(r);setRenewDate("");setRenewNote("");}} title="تجديد الإقامة" style={{background:darkMode?"#1a2a1a":"#f0fdf4",color:"#16a34a",border:"1px solid #86efac",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>🔄</button>
-                              <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");}} title="ملفات Google Drive"
+                              <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");setDriveLinkExpiry("");}} title="ملفات Google Drive"
                                 style={{background:darkMode?"#1a1a2e":"#f0f4ff",color:"#4285f4",border:"1px solid #93c5fd",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit",position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
                                 📁{getDriveLinks(r.id).length>0&&<span style={{background:"#4285f4",color:"#fff",borderRadius:10,padding:"0 5px",fontSize:9,fontWeight:800}}>{getDriveLinks(r.id).length}</span>}
                               </button>
@@ -1832,6 +1940,94 @@ export default function App() {
           );
         })()}
 
+
+        {/* ══════ نافذة تعديل الرابط ══════ */}
+        {editLinkModal&&(
+          <div onClick={()=>setEditLinkModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
+            <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:460,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+              <div style={{background:"linear-gradient(135deg,#1a73e8,#4285f4)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{color:"#fff",fontWeight:800,fontSize:16}}>✏️ تعديل الرابط</div>
+                <button onClick={()=>setEditLinkModal(null)} style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:32,height:32,fontSize:16,cursor:"pointer",fontWeight:700}}>✕</button>
+              </div>
+              <div style={{padding:"20px 22px"}}>
+                <div style={{marginBottom:12}}>
+                  <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>اسم الملف</label>
+                  <input value={editLinkModal.link.label} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,label:e.target.value}}))}
+                    style={{...inp}}/>
+                </div>
+                <div style={{marginBottom:12}}>
+                  <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>رابط Google Drive</label>
+                  <input value={editLinkModal.link.url} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,url:e.target.value}}))}
+                    style={{...inp,direction:"ltr",textAlign:"right"}}/>
+                </div>
+                <div style={{marginBottom:20}}>
+                  <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>📅 تاريخ انتهاء المستند</label>
+                  <input type="date" value={editLinkModal.link.expiryDate||""} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,expiryDate:e.target.value}}))}
+                    style={{...inp,direction:"ltr"}}/>
+                </div>
+                <div style={{display:"flex",gap:10}}>
+                  <button onClick={()=>{updateDriveLink(editLinkModal.id,editLinkModal.index,editLinkModal.link);setEditLinkModal(null);}}
+                    style={{flex:1,background:"#1a73e8",color:"#fff",border:"none",borderRadius:10,padding:"10px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                    💾 حفظ التعديل
+                  </button>
+                  <button onClick={()=>setEditLinkModal(null)}
+                    style={{background:darkMode?"#1e222b":"#f3f4f6",color:darkMode?"#f0f2f7":"#374151",border:`1px solid ${darkMode?"#2a2f3d":"#e5e7eb"}`,borderRadius:10,padding:"10px 16px",fontWeight:600,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════ نافذة تعديل السجل التجاري ══════ */}
+        {editCrModal&&(
+          <div onClick={()=>setEditCrModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
+            <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+              <div style={{background:"linear-gradient(135deg,#6B1A1A,#F5A800)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+                <div style={{color:"#fff"}}>
+                  <div style={{fontWeight:800,fontSize:16}}>✏️ تعديل السجل التجاري</div>
+                  <div style={{fontSize:12,opacity:.85,marginTop:2}}>{editCrModal.compName}</div>
+                </div>
+                <button onClick={()=>setEditCrModal(null)} style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:32,height:32,fontSize:16,cursor:"pointer",fontWeight:700}}>✕</button>
+              </div>
+              <div style={{padding:"20px 22px",overflowY:"auto",flex:1}}>
+                {[
+                  {k:"name",          l:"الاسم الرسمي للشركة"},
+                  {k:"crNumber",       l:"رقم السجل التجاري"},
+                  {k:"unifiedNumber",  l:"الرقم الوطني الموحد"},
+                  {k:"establishNumber",l:"رقم المنشأة"},
+                  {k:"type",           l:"نوع الكيان"},
+                  {k:"status",         l:"حالة السجل"},
+                  {k:"address",        l:"العنوان"},
+                  {k:"email",          l:"البريد الإلكتروني"},
+                  {k:"manager",        l:"المدير العام"},
+                  {k:"facilityManager",l:"مدير المنشأة"},
+                  {k:"phone",          l:"رقم الهاتف"},
+                  {k:"issueDate",      l:"تاريخ الإصدار",  type:"date"},
+                  {k:"expiryDate",     l:"تاريخ انتهاء السجل", type:"date"},
+                ].map(f=>(
+                  <div key={f.k} style={{marginBottom:12}}>
+                    <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>{f.l}</label>
+                    <input type={f.type||"text"} value={editCrModal.data[f.k]||""} onChange={e=>setEditCrModal(p=>({...p,data:{...p.data,[f.k]:e.target.value}}))}
+                      style={{...inp,direction:f.type==="date"?"ltr":"rtl"}}/>
+                  </div>
+                ))}
+              </div>
+              <div style={{padding:"14px 22px",borderTop:`1px solid ${darkMode?"#2a2f3d":"#e5e7eb"}`,display:"flex",gap:10,flexShrink:0}}>
+                <button onClick={()=>{saveCrData(editCrModal.compName,editCrModal.data);setEditCrModal(null);}}
+                  style={{flex:1,background:"linear-gradient(135deg,#6B1A1A,#8B2500)",color:"#fff",border:"none",borderRadius:10,padding:"11px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                  💾 حفظ التعديلات
+                </button>
+                <button onClick={()=>setEditCrModal(null)}
+                  style={{background:darkMode?"#1e222b":"#f3f4f6",color:darkMode?"#f0f2f7":"#374151",border:`1px solid ${darkMode?"#2a2f3d":"#e5e7eb"}`,borderRadius:10,padding:"11px 16px",fontWeight:600,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
 {/* ══════ نافذة Google Drive ══════ */}
         {driveModal && (
           <div onClick={()=>setDriveModal(null)}
@@ -1912,6 +2108,22 @@ export default function App() {
                       placeholder="https://drive.google.com/..."
                       style={{...inp,direction:"ltr",textAlign:"right"}}/>
                   </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{display:"block",fontSize:11,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>📅 تاريخ انتهاء المستند <span style={{fontWeight:400,color:darkMode?"#6b7585":"#9ca3af"}}>(اختياري)</span></label>
+                    <input type="date" value={driveLinkExpiry} onChange={e=>setDriveLinkExpiry(e.target.value)}
+                      style={{...inp,direction:"ltr"}}/>
+                  </div>
+
+                  <div style={{marginBottom:12}}>
+                    <label style={{display:"block",fontSize:11,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>📅 تاريخ انتهاء المستند (اختياري)</label>
+                    <input type="date" value={driveLinkExpiry||""} onChange={e=>setDriveLinkExpiry(e.target.value)} style={{...inp}}/>
+                    {driveLinkExpiry&&(()=>{
+                      const d=Math.ceil((new Date(driveLinkExpiry)-new Date())/86400000);
+                      return <div style={{fontSize:11,marginTop:4,color:d<0?"#dc2626":d<=30?"#d97706":"#16a34a",fontWeight:600}}>
+                        {d<0?`❌ منتهي منذ ${Math.abs(d)} يوم`:d<=30?`⚠️ ينتهي بعد ${d} يوم`:`✅ ينتهي بعد ${d} يوم`}
+                      </div>;
+                    })()}
+                  </div>
 
                   {/* تلميح كيف تنسخ الرابط */}
                   <div style={{background:darkMode?"#161000":"#fefce8",border:`1px solid ${darkMode?"#92400e":"#fcd34d"}`,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:11,color:darkMode?"#fde68a":"#78350f"}}>
@@ -1951,6 +2163,50 @@ export default function App() {
 
           return (
             <div>
+              {/* ── قائمة المستندات المنتهية قريباً ── */}
+              {(()=>{
+                const expiring = getExpiringDocs();
+                if(expiring.length===0) return null;
+                return (
+                  <div style={{background:dm?"#1a1500":"#fefce8",border:`1px solid ${dm?"#92400e":"#fcd34d"}`,borderRadius:12,padding:"14px 18px",marginBottom:16}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+                      <div style={{fontWeight:800,fontSize:14,color:dm?"#fde68a":"#78350f",display:"flex",alignItems:"center",gap:8}}>
+                        ⚠️ مستندات تنتهي قريباً
+                        <span style={{background:dm?"#2a1500":"#fef3c7",color:dm?"#fde68a":"#d97706",padding:"1px 10px",borderRadius:10,fontSize:12,fontWeight:700}}>{expiring.length}</span>
+                      </div>
+                      <button onClick={notifyExpiringDocs}
+                        style={{background:"#d97706",color:"#fff",border:"none",borderRadius:8,padding:"5px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",gap:5}}>
+                        🔔 إشعار
+                      </button>
+                    </div>
+                    <div style={{display:"grid",gap:6}}>
+                      {expiring.map((d,i)=>{
+                        const c=d.days<0?"#dc2626":d.days<30?"#d97706":"#d97706";
+                        const bg=dm?(d.days<0?"#2a1515":"#1a1200"):(d.days<0?"#fef2f2":"#fefce8");
+                        return (
+                          <div key={i} style={{background:bg,border:`1px solid ${d.days<0?"#fca5a5":"#fcd34d"}`,borderRadius:9,padding:"9px 12px",display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap"}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontSize:18}}>{d.link.label.includes("جواز")?"🛂":d.link.label.includes("عقد")?"📝":d.link.label.includes("سجل")?"🏢":d.link.label.includes("ترخيص")?"📜":"📄"}</span>
+                              <div>
+                                <div style={{fontWeight:700,fontSize:13,color:dm?"#f0f2f7":"#374151"}}>{d.link.label}</div>
+                                <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>{d.owner?.name||d.compName||"—"}</div>
+                              </div>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontWeight:700,fontSize:12,color:c,background:dm?"rgba(0,0,0,0.3)":"rgba(255,255,255,0.7)",padding:"2px 9px",borderRadius:8}}>
+                                {d.days<0?`منتهي منذ ${Math.abs(d.days)} يوم`:`${d.days} يوم`}
+                              </span>
+                              <a href={d.link.url} target="_blank" rel="noreferrer"
+                                style={{background:"#1a73e8",color:"#fff",padding:"3px 9px",borderRadius:6,fontSize:11,fontWeight:700,textDecoration:"none"}}>🔗</a>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* ── ملفات الشركتين ── */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:16,marginBottom:0}}>
                 {Object.entries(COMPANY_IDS).map(([compName, compId])=>{
@@ -1966,7 +2222,7 @@ export default function App() {
                             <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>{links.length} ملف مرتبط</div>
                           </div>
                         </div>
-                        <button onClick={()=>{setDriveModal({type:"company",id:compId,name:compName});setDriveLinkInput("");setDriveLinkLabel("");}}
+                        <button onClick={()=>{setDriveModal({type:"company",id:compId,name:compName});setDriveLinkInput("");setDriveLinkLabel("");setDriveLinkExpiry("");}}
                           style={{background:"#1a73e8",color:"#fff",border:"none",borderRadius:9,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
                           ➕ إضافة ملف
                         </button>
@@ -1974,18 +2230,24 @@ export default function App() {
 
                       {/* اقتراحات الملفات */}
                       {/* بيانات السجل التجاري */}
-                      {COMPANY_CR[compName]&&(
+                      {getCrData(compName)&&(
                         <div style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,padding:"12px 14px",marginBottom:12,border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`}}>
-                          <div style={{fontSize:12,fontWeight:700,color:dm?"#f0f2f7":"#374151",marginBottom:8}}>📋 بيانات السجل التجاري</div>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                            <div style={{fontSize:12,fontWeight:700,color:dm?"#f0f2f7":"#374151"}}>📋 بيانات السجل التجاري</div>
+                            <button onClick={()=>setEditCrModal({compName,data:{...getCrData(compName)}})}
+                              style={{background:dm?"#1e222b":"#f3f4f6",color:dm?"#f0f2f7":"#374151",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,borderRadius:7,padding:"3px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+                              ✏️ تعديل
+                            </button>
+                          </div>
                           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 12px",fontSize:11}}>
                             {[
-                              {l:"الاسم الرسمي",v:COMPANY_CR[compName].name},
-                              {l:"السجل التجاري",v:COMPANY_CR[compName].crNumber||"—"},
-                              {l:"الرقم الموحد",v:COMPANY_CR[compName].unifiedNumber},
-                              {l:"نوع الكيان",v:COMPANY_CR[compName].type},
-                              {l:"الحالة",v:COMPANY_CR[compName].status},
-                              {l:"المدير العام",v:COMPANY_CR[compName].manager||"—"},
-                              {l:"مدير المنشأة",v:COMPANY_CR[compName].facilityManager||"—"},
+                              {l:"الاسم الرسمي",v:getCrData(compName).name},
+                              {l:"السجل التجاري",v:getCrData(compName).crNumber||"—"},
+                              {l:"الرقم الموحد",v:getCrData(compName).unifiedNumber},
+                              {l:"نوع الكيان",v:getCrData(compName).type},
+                              {l:"الحالة",v:getCrData(compName).status},
+                              {l:"المدير العام",v:getCrData(compName).manager||"—"},
+                              {l:"مدير المنشأة",v:getCrData(compName).facilityManager||"—"},
                             ].map(x=>(
                               <div key={x.l}>
                                 <span style={{color:dm?"#a0a8bb":"#6b7280"}}>{x.l}: </span>
@@ -2066,7 +2328,7 @@ export default function App() {
                               <span style={{background:dm?"#1c1f26":"#f3f4f6",color:dm?"#a0a8bb":"#6b7280",padding:"1px 7px",borderRadius:6,fontSize:10}}>🪪 {r.iqamaNumber}</span>
                             </div>
                           </div>
-                          <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");}}
+                          <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");setDriveLinkExpiry("");}}
                             style={{background:"#1a73e8",color:"#fff",border:"none",borderRadius:8,padding:"5px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,flexShrink:0}}>
                             ➕
                           </button>
