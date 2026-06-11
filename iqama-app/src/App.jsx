@@ -13,7 +13,7 @@ import { db, auth, DB_PATH as DB_PATH_CONST } from "./firebase.js";
 
 const STORAGE_KEY = "iqama_tracker_v3";
 
-const INITIAL_DATA = [{"id":2161651126,"name":"JOYNUL ABEDIN - - ABDUL MONAF","nationality":"بنجلاديش","iqamaNumber":"2161651126","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"EM0468275","outsideKingdom":"نعم","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2168878490,"name":"عمار حسن علي الحسن","nationality":"السودان","iqamaNumber":"2168878490","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مدير عام","jobTitle":"مدير عام","passportNumber":"P08151865","passportExpiry":"2026-06-28","passportIssue":"2021-06-29","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2499287072,"name":"ليلى عمار حسن علي","nationality":"السودان","iqamaNumber":"2499287072","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08179155","passportExpiry":"2026-07-06","passportIssue":"2021-07-07","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2374056725,"name":"محمد عمار حسن الحسن","nationality":"السودان","iqamaNumber":"2374056725","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08228098","passportExpiry":"2026-07-21","passportIssue":"2021-07-22","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2570076238,"name":"يزن عمار حسن علي","nationality":"السودان","iqamaNumber":"2570076238","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P11918293","passportExpiry":"2029-04-29","passportIssue":"2024-04-30","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2374056485,"name":"هسه عمار حسن الحسن","nationality":"السودان","iqamaNumber":"2374056485","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08153195","passportExpiry":"2026-06-29","passportIssue":"2021-06-30","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2312831726,"name":"هبه محمداحمد محمد صديق","nationality":"السودان","iqamaNumber":"2312831726","type":"مرافق","relation":"زوجة","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08151939","passportExpiry":"2026-06-28","passportIssue":"2021-06-29","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2207144896,"name":"ZAFOR ULLAH ABDUL LATIB","nationality":"بنجلاديش","iqamaNumber":"2207144896","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-08","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة كهربائية","jobTitle":"فني هندسة كهربائية","passportNumber":"EM0405033","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2253325704,"name":"MOHAMED SHAHALAM MOHAMED SHAMSULHAQUE","nationality":"بنجلاديش","iqamaNumber":"2253325704","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-10-09","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة ميكانيكية","jobTitle":"فني صيانة ميكانيكية","passportNumber":"EH0582394","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2270598135,"name":"حماده منصور محمد احمد","nationality":"مصر","iqamaNumber":"2270598135","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-12-06","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني ميكانيكي تمديدات صحية","jobTitle":"فني ميكانيكي تمديدات صحية","passportNumber":"A28507403","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2285035610,"name":"حازم حشمت توفيق البسطويسي","nationality":"مصر","iqamaNumber":"2285035610","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-27","renewalStatus":"لم يبدأ","renewalCost":"","notes":"محاسب","jobTitle":"محاسب","passportNumber":"A29095351","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2316800917,"name":"محمد فتحي علي الفقي","nationality":"مصر","iqamaNumber":"2316800917","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-23","renewalStatus":"لم يبدأ","renewalCost":"","notes":"لحام","jobTitle":"لحام","passportNumber":"A04219484","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2368280851,"name":"عمار فضل المولي محمد الزبير","nationality":"السودان","iqamaNumber":"2368280851","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-02","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"P12124172","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2377607409,"name":"احمد حمدى احمد هلال","nationality":"مصر","iqamaNumber":"2377607409","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-11-19","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  ميكانيكي","jobTitle":"مهندس  ميكانيكي","passportNumber":"A28249488","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2391783970,"name":"بلال احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2391783970","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A28249489","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2422905527,"name":"اروى احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2422905527","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A32896771","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2545044733,"name":"زيد احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2545044733","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A32896837","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2391783988,"name":"ساره محمود خليل محمد","nationality":"مصر","iqamaNumber":"2391783988","type":"مرافق","relation":"زوجة","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A28249643","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2383433394,"name":"NAFEES AHMAD MOHD MUSTFA","nationality":"الهند","iqamaNumber":"2383433394","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-28","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي أنظمةحمايةكهربائية","jobTitle":"فني كهربائي أنظمةحمايةكهربائية","passportNumber":"V5262084","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2408364129,"name":"احمد جمال البسيوني ابراهيم","nationality":"مصر","iqamaNumber":"2408364129","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-04","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"A23626418","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2424076574,"name":"محمد عبدالله عبدالحليم عبدالله","nationality":"السودان","iqamaNumber":"2424076574","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-02","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  الكترونيات","jobTitle":"مهندس  الكترونيات","passportNumber":"P09775301","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2426377111,"name":"GAYYUR AHMAD MURSLEEN AHMAD","nationality":"الهند","iqamaNumber":"2426377111","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"U0688192","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2438640225,"name":"MOHAMMAD RAJU MOJUMDAR HAFEJA","nationality":"بنجلاديش","iqamaNumber":"2438640225","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-11-07","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل بناء","jobTitle":"عامل بناء","passportNumber":"EJ0383352","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2444383471,"name":"عبدالعليم قائد ناصر قاسم","nationality":"اليمن","iqamaNumber":"2444383471","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-09-25","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"10928633","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2464717319,"name":"MOHAMMED JOYNUL ABEDIN","nationality":"بنجلاديش","iqamaNumber":"2464717319","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي مصاعد","jobTitle":"ميكانيكي مصاعد","passportNumber":"EH0762631","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2466025505,"name":"MANJOOR AHMED HAFIZ FAZRUDDIN","nationality":"الهند","iqamaNumber":"2466025505","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"لحام","jobTitle":"لحام","passportNumber":"Y6166044","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2479489730,"name":"FIROZ AHMED SAEED HUSSAIN","nationality":"الهند","iqamaNumber":"2479489730","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-19","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"T3702870","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2495781763,"name":"غسان على جلال احمد","nationality":"السودان","iqamaNumber":"2495781763","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2025-10-01","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"P07034750","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2508579659,"name":"FARHAN MANNAN ABDUL MANNAN","nationality":"باكستان","iqamaNumber":"2508579659","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-05-08","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي مصاعد","jobTitle":"ميكانيكي مصاعد","passportNumber":"AR0704682","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2508580137,"name":"HABIBUR RAHMAN","nationality":"بنجلاديش","iqamaNumber":"2508580137","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-24","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة الكترونية","jobTitle":"فني هندسة الكترونية","passportNumber":"A18031168","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2510535806,"name":"اسد الله محمد مساعد سليمان","nationality":"السودان","iqamaNumber":"2510535806","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-14","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة أجهزة الكترونية","jobTitle":"فني صيانة أجهزة الكترونية","passportNumber":"P05665810","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2513490108,"name":"MD FOQRUL ISLAM","nationality":"بنجلاديش","iqamaNumber":"2513490108","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-02-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"EN0083184","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2515822423,"name":"IRSHAD AHMED","nationality":"الهند","iqamaNumber":"2515822423","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-16","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"U0136451","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2525086464,"name":"ABDULLAH MUHAMMAD ASLAM KHAN","nationality":"باكستان","iqamaNumber":"2525086464","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-10","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة كهربائية","jobTitle":"فني هندسة كهربائية","passportNumber":"HB1073993","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2526249459,"name":"ابوبكر حبيب الله محمد فضل الله","nationality":"السودان","iqamaNumber":"2526249459","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-09-04","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  كهربائي","jobTitle":"مهندس  كهربائي","passportNumber":"P08667135","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2526824905,"name":"BABU MANJUR AHMED","nationality":"الهند","iqamaNumber":"2526824905","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-11","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة ميكانيكية","jobTitle":"فني صيانة ميكانيكية","passportNumber":"U2024984","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2549937999,"name":"MOHAMMED ELIAS","nationality":"بنجلاديش","iqamaNumber":"2549937999","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-11","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"EG0771953","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2566347197,"name":"محمد احمد محمد قسم السيد","nationality":"السودان","iqamaNumber":"2566347197","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-30","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مدير مالي","jobTitle":"مدير مالي","passportNumber":"P09336349","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2567584533,"name":"حسن عطا المنان الحسن محمد","nationality":"السودان","iqamaNumber":"2567584533","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل بناء","jobTitle":"عامل بناء","passportNumber":"P11068420","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2571845128,"name":"المصطفي محمد علي الضو","nationality":"السودان","iqamaNumber":"2571845128","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-21","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"P10162929","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2575431966,"name":"ايات جاد الله محمد احمد البلوله","nationality":"السودان","iqamaNumber":"2575431966","type":"موظف","relation":"","gender":"أنثى","expiryDate":"2026-06-12","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  ميكانيكي","jobTitle":"مهندس  ميكانيكي","passportNumber":"P13192846","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2578801967,"name":"MD JONY MIA","nationality":"بنجلاديش","iqamaNumber":"2578801967","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2027-07-10","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي معدات الكرتونية","jobTitle":"ميكانيكي معدات الكرتونية","passportNumber":"A11176721","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2590187510,"name":"محمد سر الختم عوض محمد","nationality":"السودان","iqamaNumber":"2590187510","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"P11400698","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2628316743,"name":"عبدالحليم محمد عثمان سليمان","nationality":"السودان","iqamaNumber":"2628316743","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"P13512941","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"}];
+const INITIAL_DATA = [{"id":2161651126,"name":"JOYNUL ABEDIN - - ABDUL MONAF","nationality":"بنجلاديش","iqamaNumber":"2161651126","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"EM0468275","outsideKingdom":"نعم","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2168878490,"name":"عمار حسن علي الحسن","contractNumber":"2181161","contractStart":"2022-03-21","contractEnd":"2025-03-26","phone":"0564334224","email":"basha@anjal.cc","nationality":"السودان","iqamaNumber":"2168878490","contractDate":"2022-03-21","contractNum":"2181161","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مدير عام","jobTitle":"مدير عام","passportNumber":"P08151865","passportExpiry":"2026-06-28","passportIssue":"2021-06-29","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2499287072,"name":"ليلى عمار حسن علي","nationality":"السودان","iqamaNumber":"2499287072","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08179155","passportExpiry":"2026-07-06","passportIssue":"2021-07-07","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2374056725,"name":"محمد عمار حسن الحسن","nationality":"السودان","iqamaNumber":"2374056725","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08228098","passportExpiry":"2026-07-21","passportIssue":"2021-07-22","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2570076238,"name":"يزن عمار حسن علي","nationality":"السودان","iqamaNumber":"2570076238","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P11918293","passportExpiry":"2029-04-29","passportIssue":"2024-04-30","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2374056485,"name":"هسه عمار حسن الحسن","nationality":"السودان","iqamaNumber":"2374056485","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08153195","passportExpiry":"2026-06-29","passportIssue":"2021-06-30","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2312831726,"name":"هبه محمداحمد محمد صديق","nationality":"السودان","iqamaNumber":"2312831726","type":"مرافق","relation":"زوجة","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"P08151939","passportExpiry":"2026-06-28","passportIssue":"2021-06-29","outsideKingdom":"لا","familyHeadId":"2168878490","employerId":"7006539477","company":"انجال المشاعر"},{"id":2207144896,"name":"ZAFOR ULLAH ABDUL LATIB","nationality":"بنجلاديش","iqamaNumber":"2207144896","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-08","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة كهربائية","jobTitle":"فني هندسة كهربائية","passportNumber":"EM0405033","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2253325704,"name":"MOHAMED SHAHALAM MOHAMED SHAMSULHAQUE","nationality":"بنجلاديش","iqamaNumber":"2253325704","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-10-09","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة ميكانيكية","jobTitle":"فني صيانة ميكانيكية","passportNumber":"EH0582394","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2270598135,"name":"حماده منصور محمد احمد","nationality":"مصر","iqamaNumber":"2270598135","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-12-06","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني ميكانيكي تمديدات صحية","jobTitle":"فني ميكانيكي تمديدات صحية","passportNumber":"A28507403","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2285035610,"name":"حازم حشمت توفيق البسطويسي","nationality":"مصر","iqamaNumber":"2285035610","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-27","renewalStatus":"لم يبدأ","renewalCost":"","notes":"محاسب","jobTitle":"محاسب","passportNumber":"A29095351","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2316800917,"name":"محمد فتحي علي الفقي","nationality":"مصر","iqamaNumber":"2316800917","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-23","renewalStatus":"لم يبدأ","renewalCost":"","notes":"لحام","jobTitle":"لحام","passportNumber":"A04219484","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2368280851,"name":"عمار فضل المولي محمد الزبير","nationality":"السودان","iqamaNumber":"2368280851","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-02","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"P12124172","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2377607409,"name":"احمد حمدى احمد هلال","nationality":"مصر","iqamaNumber":"2377607409","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-11-19","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  ميكانيكي","jobTitle":"مهندس  ميكانيكي","passportNumber":"A28249488","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2391783970,"name":"بلال احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2391783970","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A28249489","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2422905527,"name":"اروى احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2422905527","type":"مرافق","relation":"بنت","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A32896771","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2545044733,"name":"زيد احمد حمدي هلال","nationality":"مصر","iqamaNumber":"2545044733","type":"مرافق","relation":"ابن","gender":"ذكر","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A32896837","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2391783988,"name":"ساره محمود خليل محمد","nationality":"مصر","iqamaNumber":"2391783988","type":"مرافق","relation":"زوجة","gender":"أنثى","expiryDate":"","renewalStatus":"لم يبدأ","renewalCost":"","notes":"","jobTitle":"","passportNumber":"A28249643","outsideKingdom":"نعم","familyHeadId":"2377607409","employerId":"7006539477","company":"انجال المشاعر"},{"id":2383433394,"name":"NAFEES AHMAD MOHD MUSTFA","nationality":"الهند","iqamaNumber":"2383433394","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-28","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي أنظمةحمايةكهربائية","jobTitle":"فني كهربائي أنظمةحمايةكهربائية","passportNumber":"V5262084","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2408364129,"name":"احمد جمال البسيوني ابراهيم","nationality":"مصر","iqamaNumber":"2408364129","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-04","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"A23626418","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2424076574,"name":"محمد عبدالله عبدالحليم عبدالله","nationality":"السودان","iqamaNumber":"2424076574","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-02","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  الكترونيات","jobTitle":"مهندس  الكترونيات","passportNumber":"P09775301","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2426377111,"name":"GAYYUR AHMAD MURSLEEN AHMAD","nationality":"الهند","iqamaNumber":"2426377111","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"U0688192","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2438640225,"name":"MOHAMMAD RAJU MOJUMDAR HAFEJA","nationality":"بنجلاديش","iqamaNumber":"2438640225","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-11-07","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل بناء","jobTitle":"عامل بناء","passportNumber":"EJ0383352","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2444383471,"name":"عبدالعليم قائد ناصر قاسم","nationality":"اليمن","iqamaNumber":"2444383471","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-09-25","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"10928633","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2464717319,"name":"MOHAMMED JOYNUL ABEDIN","nationality":"بنجلاديش","iqamaNumber":"2464717319","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي مصاعد","jobTitle":"ميكانيكي مصاعد","passportNumber":"EH0762631","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2466025505,"name":"MANJOOR AHMED HAFIZ FAZRUDDIN","nationality":"الهند","iqamaNumber":"2466025505","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"لحام","jobTitle":"لحام","passportNumber":"Y6166044","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2479489730,"name":"FIROZ AHMED SAEED HUSSAIN","nationality":"الهند","iqamaNumber":"2479489730","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-19","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"T3702870","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2495781763,"name":"غسان على جلال احمد","contractNumber":"24432207","contractStart":"2024-12-24","contractEnd":"2025-12-23","phone":"0545580861","email":"ghassan@anjal.cc","nationality":"السودان","iqamaNumber":"2495781763","contractDate":"2024-12-22","contractNum":"24432207","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2025-10-01","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"P07034750","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2508579659,"name":"FARHAN MANNAN ABDUL MANNAN","nationality":"باكستان","iqamaNumber":"2508579659","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-05-08","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي مصاعد","jobTitle":"ميكانيكي مصاعد","passportNumber":"AR0704682","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2508580137,"name":"HABIBUR RAHMAN","nationality":"بنجلاديش","iqamaNumber":"2508580137","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-24","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة الكترونية","jobTitle":"فني هندسة الكترونية","passportNumber":"A18031168","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2510535806,"name":"اسد الله محمد مساعد سليمان","nationality":"السودان","iqamaNumber":"2510535806","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-14","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة أجهزة الكترونية","jobTitle":"فني صيانة أجهزة الكترونية","passportNumber":"P05665810","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2513490108,"name":"MD FOQRUL ISLAM","nationality":"بنجلاديش","iqamaNumber":"2513490108","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-02-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"EN0083184","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2515822423,"name":"IRSHAD AHMED","nationality":"الهند","iqamaNumber":"2515822423","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-16","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"U0136451","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2525086464,"name":"ABDULLAH MUHAMMAD ASLAM KHAN","nationality":"باكستان","iqamaNumber":"2525086464","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-10","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني هندسة كهربائية","jobTitle":"فني هندسة كهربائية","passportNumber":"HB1073993","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2526249459,"name":"ابوبكر حبيب الله محمد فضل الله","nationality":"السودان","iqamaNumber":"2526249459","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-09-04","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  كهربائي","jobTitle":"مهندس  كهربائي","passportNumber":"P08667135","outsideKingdom":"لا","familyHeadId":"","employerId":"7016055357","company":"دلتا الماسية"},{"id":2526824905,"name":"BABU MANJUR AHMED","nationality":"الهند","iqamaNumber":"2526824905","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-11","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني صيانة ميكانيكية","jobTitle":"فني صيانة ميكانيكية","passportNumber":"U2024984","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2549937999,"name":"MOHAMMED ELIAS","nationality":"بنجلاديش","iqamaNumber":"2549937999","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-11","renewalStatus":"لم يبدأ","renewalCost":"","notes":"سباك","jobTitle":"سباك","passportNumber":"EG0771953","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2566347197,"name":"محمد احمد محمد قسم السيد","contractNumber":"24436149","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0535949982","email":"cfo@anjal.cc","nationality":"السودان","iqamaNumber":"2566347197","contractDate":"2024-12-22","contractNum":"24436149","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-06-30","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مدير مالي","jobTitle":"مدير مالي","passportNumber":"P09336349","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2567584533,"name":"حسن عطا المنان الحسن محمد","nationality":"السودان","iqamaNumber":"2567584533","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-07-20","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل بناء","jobTitle":"عامل بناء","passportNumber":"P11068420","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2571845128,"name":"المصطفي محمد علي الضو","contractNumber":"24433429","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0531606798","email":"mustafa.eldaw@gmail.com","nationality":"السودان","iqamaNumber":"2571845128","contractDate":"2024-12-22","contractNum":"24433429","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-21","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"P10162929","outsideKingdom":"نعم","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2575431966,"name":"ايات جاد الله محمد احمد البلوله","contractNumber":"24433747","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0574038225","email":"ayatjadallah3000@gmail.com","nationality":"السودان","iqamaNumber":"2575431966","contractDate":"2024-12-22","contractNum":"24433747","type":"موظف","relation":"","gender":"أنثى","expiryDate":"2026-06-12","renewalStatus":"لم يبدأ","renewalCost":"","notes":"مهندس  ميكانيكي","jobTitle":"مهندس  ميكانيكي","passportNumber":"P13192846","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2578801967,"name":"MD JONY MIA","nationality":"بنجلاديش","iqamaNumber":"2578801967","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2027-07-10","renewalStatus":"لم يبدأ","renewalCost":"","notes":"ميكانيكي معدات الكرتونية","jobTitle":"ميكانيكي معدات الكرتونية","passportNumber":"A11176721","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2590187510,"name":"محمد سر الختم عوض محمد","nationality":"السودان","iqamaNumber":"2590187510","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-18","renewalStatus":"لم يبدأ","renewalCost":"","notes":"فني كهربائي تمديدات كهربائية","jobTitle":"فني كهربائي تمديدات كهربائية","passportNumber":"P11400698","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2628316743,"name":"عبدالحليم محمد عثمان سليمان","nationality":"السودان","iqamaNumber":"2628316743","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2026-08-26","renewalStatus":"لم يبدأ","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"P13512941","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2388580298,"name":"الجميل محمد داؤد علوان","contractNumber":"24431968","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0534460589","email":"algamil@anjal.cc","nationality":"السودان","iqamaNumber":"2388580298","contractDate":"2024-12-22","contractNum":"24431968","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2025-01-11","renewalStatus":"قيد التجديد","renewalCost":"","notes":"مهندس ميكانيكي","jobTitle":"مهندس ميكانيكي","passportNumber":"","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2566969032,"name":"داليا عمر عوض الله صالح","contractNumber":"24433245","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0509367163","email":"dalia.omer@hotmail.com","nationality":"السودان","iqamaNumber":"2566969032","contractDate":"2024-12-22","contractNum":"24433245","type":"موظف","relation":"","gender":"أنثى","expiryDate":"2024-07-31","renewalStatus":"قيد التجديد","renewalCost":"","notes":"مهندس إلكترونيات","jobTitle":"مهندس إلكترونيات","passportNumber":"","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2505071395,"name":"عمر فاروق احمد حسين","contractNumber":"24432287","contractStart":"2024-12-23","contractEnd":"2025-12-22","phone":"0546216077","email":"omarfaroug910@gmail.com","nationality":"السودان","iqamaNumber":"2505071395","contractDate":"2024-12-22","contractNum":"24432287","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-08-03","renewalStatus":"قيد التجديد","renewalCost":"","notes":"عامل صيانة أجهزة كهربائية","jobTitle":"عامل صيانة أجهزة كهربائية","passportNumber":"","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"},{"id":2513005807,"name":"عبدالله بقاري محمد محجوب","contractNumber":"26000907","contractStart":"2025-03-03","contractEnd":"2026-03-02","phone":"0573437944","email":"tooomsa71993@gmail.com","nationality":"السودان","iqamaNumber":"2513005807","contractDate":"2025-03-03","contractNum":"26000907","type":"موظف","relation":"","gender":"ذكر","expiryDate":"2024-02-09","renewalStatus":"قيد التجديد","renewalCost":"","notes":"فني هندسة ميكانيكية","jobTitle":"فني هندسة ميكانيكية","passportNumber":"","outsideKingdom":"لا","familyHeadId":"","employerId":"7006539477","company":"انجال المشاعر"}];
 
 const STATUS_COLORS = {
   منتهية:        { bg:"#fee2e2", text:"#dc2626", border:"#fca5a5" },
@@ -21,6 +21,24 @@ const STATUS_COLORS = {
   سارية:         { bg:"#dcfce7", text:"#16a34a", border:"#86efac" },
   "قيد التجديد": { bg:"#dbeafe", text:"#2563eb", border:"#93c5fd" },
   مرافق:         { bg:"#f3e8ff", text:"#7c3aed", border:"#c4b5fd" },
+};
+
+const COMPANY_INFO = {
+  "انجال المشاعر": {
+    crNumber: "7006539477",
+    crCommercial: "4031081110",
+    crDate: "2013-11-25",
+    type: "شركة ذات مسؤولية محدودة",
+    status: "نشط",
+    email: "info@anjal.cc",
+    address: "مكة المكرمة، عبدالله خياط",
+  },
+  "دلتا الماسية": {
+    crNumber: "7016055357",
+    crDate: "2019-10-10",
+    type: "شركة ذات مسؤولية محدودة",
+    status: "نشط",
+  },
 };
 
 const COMPANY_COLORS = {
@@ -667,11 +685,11 @@ export default function App() {
 
         {/* Tabs */}
         <div style={{display:"flex",gap:8,marginBottom:16}}>
-          {["list","alerts","family","cost","reports","files"].map(tab=>(
+          {["list","alerts","family","cost","reports","files","classify"].map(tab=>(
             <button key={tab} onClick={()=>setActiveTab(tab)}
               style={{padding:"7px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",
                 background:activeTab===tab?"#8B2500":darkMode?"#161920":"#fff",color:activeTab===tab?"#fff":darkMode?"#f0f2f7":"#374151",border:darkMode&&activeTab!==tab?"1px solid #2a2f3d":"none",boxShadow:darkMode?"0 2px 8px rgba(0,0,0,0.6)":"0 2px 6px rgba(0,0,0,0.07)"}}>
-              {tab==="list"?"📋 الكل":tab==="alerts"?`🔔 تنبيهات ${stats.expired+stats.soon>0?`(${stats.expired+stats.soon})`:""}`:tab==="family"?`👨‍👩‍👧 عائلات (${stats.dependents})`:tab==="cost"?"💰 حاسبة التكلفة":tab==="reports"?"📊 التقارير":"📁 الملفات"}
+              {tab==="list"?"📋 الكل":tab==="alerts"?`🔔 تنبيهات ${stats.expired+stats.soon>0?`(${stats.expired+stats.soon})`:""}`:tab==="family"?`👨‍👩‍👧 عائلات (${stats.dependents})`:tab==="cost"?"💰 حاسبة التكلفة":tab==="reports"?"📊 التقارير":tab==="files"?"📁 الملفات":"⚖️ التنصيف"}
             </button>
           ))}
         </div>
@@ -869,7 +887,7 @@ export default function App() {
                         {/* تفاصيل رب الأسرة عند الضغط على الاسم */}
                         {expanded&&(
                           <div style={{marginTop:10,paddingTop:10,borderTop:"1px dashed #e5e7eb",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:7}}>
-                            {[{l:"رقم الإقامة",v:r.iqamaNumber},{l:"الجنسية",v:r.nationality},{l:"الجنس",v:r.gender},{l:"رقم الجواز",v:r.passportNumber},{l:"انتهاء الجواز",v:r.passportExpiry?new Date(r.passportExpiry).toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"}):"-"},{l:"المهنة",v:r.jobTitle||r.notes},{l:"خارج المملكة",v:r.outsideKingdom},{l:"حالة التجديد",v:r.renewalStatus},{l:"الشركة",v:r.company},{l:"آخر تجديد",v:r.lastRenewalDate?new Date(r.lastRenewalDate).toLocaleDateString("ar-SA"):"-"},{l:"ملاحظة التجديد",v:r.lastRenewalNote||"-"}].map(f=>(
+                            {[{l:"رقم الإقامة",v:r.iqamaNumber},{l:"الجنسية",v:r.nationality},{l:"الجنس",v:r.gender},{l:"رقم الجواز",v:r.passportNumber},{l:"انتهاء الجواز",v:r.passportExpiry?new Date(r.passportExpiry).toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"}):"-"},{l:"تاريخ العقد",v:r.contractDate?new Date(r.contractDate).toLocaleDateString("ar-SA"):"-"},{l:"رقم العقد",v:r.contractNum||"-"},{l:"المهنة",v:r.jobTitle||r.notes},{l:"خارج المملكة",v:r.outsideKingdom},{l:"حالة التجديد",v:r.renewalStatus},{l:"الشركة",v:r.company},{l:"آخر تجديد",v:r.lastRenewalDate?new Date(r.lastRenewalDate).toLocaleDateString("ar-SA"):"-"},{l:"ملاحظة التجديد",v:r.lastRenewalNote||"-"}].map(f=>(
                               <div key={f.l} style={{background:darkMode?"#1e222b":"#f0f2f5",borderRadius:7,padding:"7px 10px"}}>
                                 <div style={{fontSize:10,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:1}}>{f.l}</div>
                                 <div style={{fontSize:12,fontWeight:600,color:darkMode?"#f0f2f7":"#1f2937"}}>{f.v||"-"}</div>
@@ -1306,6 +1324,204 @@ export default function App() {
 
 
 
+
+        {/* ══════ تبويب التنصيف ══════ */}
+        {activeTab==="classify"&&(()=>{
+          const dm = darkMode;
+          const card = {background:dm?"#161920":"#fff",borderRadius:14,padding:"20px 22px",boxShadow:dm?"0 2px 10px rgba(0,0,0,0.5)":"0 2px 10px rgba(0,0,0,0.07)",marginBottom:18};
+
+          return (
+            <div>
+              {/* ── عنوان ── */}
+              <div style={{background:dm?"#161920":"#fff",borderRadius:14,padding:"18px 22px",marginBottom:18,boxShadow:dm?"0 2px 10px rgba(0,0,0,0.5)":"0 2px 10px rgba(0,0,0,0.07)"}}>
+                <div style={{fontWeight:800,fontSize:16,color:dm?"#f0f2f7":"#1e3a5f",marginBottom:6,display:"flex",alignItems:"center",gap:8}}>
+                  ⚖️ تقرير الالتزام بالتنصيف
+                </div>
+                <p style={{fontSize:13,color:dm?"#a0a8bb":"#6b7280",margin:0}}>
+                  مقارنة المهن الموجودة حالياً مع المتطلبات الرسمية لكل نشاط تجاري
+                </p>
+              </div>
+
+              {/* ── بطاقة لكل شركة ── */}
+              {Object.entries(CLASSIFICATION_REQUIREMENTS).map(([compName, req])=>{
+                const compEmps = records.filter(r=>r.company===compName && r.type!=="مرافق");
+                const cc = COMPANY_COLORS[compName]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+
+                // حساب الموجود من كل مهنة
+                const jobCounts = req.jobs.map(j=>{
+                  const count = compEmps.filter(e=>matchJob(e.jobTitle||e.notes, j.title)).length;
+                  const diff  = count - j.required;
+                  const status = diff >= 0 ? "مكتمل" : diff >= -1 ? "ناقص" : "ناقص جداً";
+                  return {...j, count, diff, status};
+                });
+
+                const totalRequired = req.jobs.reduce((s,j)=>s+j.required,0);
+                const totalFound    = jobCounts.reduce((s,j)=>s+j.count,0);
+                const compliantJobs = jobCounts.filter(j=>j.diff>=0).length;
+                const totalJobs     = jobCounts.length;
+                const compliance    = Math.round(compliantJobs/totalJobs*100);
+
+                // الموظفون غير المصنفين (مهنتهم لا تطابق أي متطلب)
+                const classifiedIds = new Set();
+                jobCounts.forEach(j=>{
+                  compEmps.filter(e=>matchJob(e.jobTitle||e.notes, j.title)).forEach(e=>classifiedIds.add(e.id));
+                });
+                const unclassified = compEmps.filter(e=>!classifiedIds.has(e.id));
+
+                const statusColor = compliance===100?"#16a34a":compliance>=70?"#d97706":"#dc2626";
+                const statusBg    = dm?(compliance===100?"#081a12":compliance>=70?"#1a1500":"#2a1515"):(compliance===100?"#f0fdf4":compliance>=70?"#fefce8":"#fef2f2");
+
+                return (
+                  <div key={compName} style={card}>
+                    {/* هيدر الشركة */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20,flexWrap:"wrap",gap:12}}>
+                      <div style={{display:"flex",alignItems:"center",gap:12}}>
+                        <div style={{width:44,height:44,borderRadius:12,background:cc.bg,border:`2px solid ${cc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
+                          {req.icon}
+                        </div>
+                        <div>
+                          <div style={{fontWeight:800,fontSize:16,color:dm?"#f0f2f7":req.color}}>{compName}</div>
+                          <div style={{fontSize:12,color:dm?"#a0a8bb":"#6b7280",marginTop:2}}>{req.activity}</div>
+                        </div>
+                      </div>
+
+                      {/* مؤشر الامتثال الدائري */}
+                      <div style={{background:statusBg,border:`2px solid ${statusColor}`,borderRadius:12,padding:"12px 20px",textAlign:"center",minWidth:120}}>
+                        <div style={{fontSize:28,fontWeight:900,color:statusColor}}>{compliance}%</div>
+                        <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",marginTop:2}}>نسبة الالتزام</div>
+                        <div style={{fontSize:11,fontWeight:700,color:statusColor}}>
+                          {compliance===100?"✅ مكتمل":compliance>=70?"⚠️ جزئي":"❌ ناقص"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* شريط التقدم الكلي */}
+                    <div style={{marginBottom:20}}>
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:dm?"#a0a8bb":"#6b7280",marginBottom:6}}>
+                        <span>التقدم الكلي ({compliantJobs}/{totalJobs} مهنة مكتملة)</span>
+                        <span style={{fontWeight:700,color:statusColor}}>{compliance}%</span>
+                      </div>
+                      <div style={{background:dm?"#1e222b":"#f3f4f6",borderRadius:20,height:10,overflow:"hidden"}}>
+                        <div style={{width:`${compliance}%`,height:"100%",background:statusColor,borderRadius:20,transition:"width 0.6s",minWidth:compliance>0?4:0}}/>
+                      </div>
+                    </div>
+
+                    {/* جدول المهن */}
+                    <div style={{borderRadius:12,overflow:"hidden",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,marginBottom:unclassified.length>0?16:0}}>
+                      {/* رأس الجدول */}
+                      <div style={{background:req.color,padding:"10px 16px",display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1.5fr",gap:8,color:"#fff",fontSize:12,fontWeight:700}}>
+                        <span>المهنة المطلوبة</span>
+                        <span style={{textAlign:"center"}}>المطلوب</span>
+                        <span style={{textAlign:"center"}}>الموجود</span>
+                        <span style={{textAlign:"center"}}>الفرق</span>
+                        <span style={{textAlign:"center"}}>الحالة</span>
+                      </div>
+
+                      {/* صفوف المهن */}
+                      {jobCounts.map((j,i)=>{
+                        const rowBg = j.diff>=0
+                          ? (dm?"#0a2218":"#f0fdf4")
+                          : j.diff>=-1
+                          ? (dm?"#1a1500":"#fefce8")
+                          : (dm?"#2a1515":"#fef2f2");
+                        const rowBorder = j.diff>=0?"#86efac":j.diff>=-1?"#fcd34d":"#fca5a5";
+                        const textColor = j.diff>=0?"#16a34a":j.diff>=-1?"#d97706":"#dc2626";
+
+                        return (
+                          <div key={j.title} style={{
+                            padding:"11px 16px",
+                            background:i%2===0?(dm?"#161920":"#fff"):(dm?"#111419":"#fafafa"),
+                            display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1.5fr",gap:8,
+                            alignItems:"center",
+                            borderBottom:`1px solid ${dm?"#2a2f3d":"#f3f4f6"}`,
+                            borderRight:`3px solid ${rowBorder}`,
+                          }}>
+                            <span style={{fontWeight:600,fontSize:13,color:dm?"#f0f2f7":"#374151"}}>{j.title}</span>
+                            <span style={{textAlign:"center",fontWeight:700,fontSize:14,color:dm?"#a0a8bb":"#6b7280"}}>{j.required}</span>
+                            <span style={{textAlign:"center",fontWeight:800,fontSize:14,color:j.count>=j.required?"#16a34a":j.count>0?"#d97706":"#dc2626"}}>{j.count}</span>
+                            <span style={{textAlign:"center",fontWeight:700,fontSize:13,color:textColor}}>
+                              {j.diff>0?`+${j.diff}`:j.diff}
+                            </span>
+                            <div style={{textAlign:"center"}}>
+                              <span style={{background:rowBg,border:`1px solid ${rowBorder}`,color:textColor,padding:"3px 10px",borderRadius:12,fontSize:11,fontWeight:700}}>
+                                {j.diff>=0?"✅ مكتمل":j.diff>=-1?"⚠️ ناقص 1":"❌ ناقص "+Math.abs(j.diff)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* صف الإجمالي */}
+                      <div style={{padding:"11px 16px",background:dm?"#0a2218":"#f0fdf4",borderTop:`2px solid ${dm?"#166534":"#86efac"}`,display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1.5fr",gap:8,alignItems:"center"}}>
+                        <span style={{fontWeight:800,fontSize:13,color:dm?"#6ee7b7":"#15803d"}}>الإجمالي</span>
+                        <span style={{textAlign:"center",fontWeight:800,fontSize:14,color:dm?"#6ee7b7":"#15803d"}}>{totalRequired}</span>
+                        <span style={{textAlign:"center",fontWeight:800,fontSize:14,color:totalFound>=totalRequired?"#16a34a":"#d97706"}}>{totalFound}</span>
+                        <span style={{textAlign:"center",fontWeight:700,fontSize:13,color:totalFound>=totalRequired?"#16a34a":"#dc2626"}}>
+                          {totalFound-totalRequired>0?`+${totalFound-totalRequired}`:totalFound-totalRequired}
+                        </span>
+                        <div style={{textAlign:"center"}}>
+                          <span style={{fontWeight:700,fontSize:12,color:statusColor}}>{compliance}% التزام</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* الموظفون المصنفون لكل مهنة */}
+                    <div style={{marginBottom:unclassified.length>0?16:0}}>
+                      <div style={{fontSize:13,fontWeight:700,color:dm?"#f0f2f7":"#374151",marginBottom:10}}>👥 توزيع الموظفين على المهن</div>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>
+                        {jobCounts.map(j=>{
+                          const emps = compEmps.filter(e=>matchJob(e.jobTitle||e.notes, j.title));
+                          const isOk = j.diff>=0;
+                          return (
+                            <div key={j.title} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,border:`1px solid ${isOk?(dm?"#166534":"#86efac"):(dm?"#7f1d1d":"#fca5a5")}`,padding:"10px 12px"}}>
+                              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                                <span style={{fontSize:12,fontWeight:700,color:dm?"#f0f2f7":"#374151"}}>{j.title}</span>
+                                <span style={{fontSize:11,fontWeight:700,color:isOk?"#16a34a":"#dc2626"}}>{j.count}/{j.required}</span>
+                              </div>
+                              {emps.length===0?(
+                                <div style={{fontSize:11,color:dm?"#a0a8bb":"#9ca3af",fontStyle:"italic"}}>لا يوجد موظفون</div>
+                              ):(
+                                <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                                  {emps.map(e=>{
+                                    const st=getStatus(e);
+                                    const sc=STATUS_COLORS[st];
+                                    return (
+                                      <span key={e.id} style={{background:sc.bg,color:sc.text,border:`1px solid ${sc.border}`,padding:"1px 8px",borderRadius:10,fontSize:10,fontWeight:600}}>
+                                        {e.name}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* الموظفون غير المصنفين */}
+                    {unclassified.length>0&&(
+                      <div style={{background:dm?"#1a1500":"#fefce8",border:`1px solid ${dm?"#92400e":"#fcd34d"}`,borderRadius:10,padding:"12px 16px"}}>
+                        <div style={{fontSize:13,fontWeight:700,color:dm?"#fde68a":"#78350f",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+                          ⚠️ موظفون خارج متطلبات التنصيف ({unclassified.length})
+                        </div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {unclassified.map(e=>(
+                            <div key={e.id} style={{background:dm?"#161920":"#fff",border:`1px solid ${dm?"#92400e":"#fcd34d"}`,borderRadius:8,padding:"4px 10px",fontSize:11}}>
+                              <span style={{fontWeight:600,color:dm?"#f0f2f7":"#374151"}}>{e.name}</span>
+                              <span style={{color:dm?"#a0a8bb":"#6b7280",marginRight:4}}> — {e.jobTitle||e.notes||"بدون مهنة"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
         {/* ══════ نافذة Google Drive ══════ */}
         {driveModal && (
           <div onClick={()=>setDriveModal(null)}
@@ -1442,6 +1658,28 @@ export default function App() {
                       </div>
 
                       {/* اقتراحات الملفات */}
+                      {/* بيانات السجل التجاري */}
+                      {COMPANY_CR[compName]&&(
+                        <div style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,padding:"12px 14px",marginBottom:12,border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`}}>
+                          <div style={{fontSize:12,fontWeight:700,color:dm?"#f0f2f7":"#374151",marginBottom:8}}>📋 بيانات السجل التجاري</div>
+                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 12px",fontSize:11}}>
+                            {[
+                              {l:"الاسم الرسمي",v:COMPANY_CR[compName].name},
+                              {l:"السجل التجاري",v:COMPANY_CR[compName].crNumber||"—"},
+                              {l:"الرقم الموحد",v:COMPANY_CR[compName].unifiedNumber},
+                              {l:"نوع الكيان",v:COMPANY_CR[compName].type},
+                              {l:"الحالة",v:COMPANY_CR[compName].status},
+                              {l:"المدير",v:COMPANY_CR[compName].manager||"—"},
+                            ].map(x=>(
+                              <div key={x.l}>
+                                <span style={{color:dm?"#a0a8bb":"#6b7280"}}>{x.l}: </span>
+                                <span style={{fontWeight:600,color:dm?"#f0f2f7":"#374151"}}>{x.v}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div style={{marginBottom:12}}>
                         <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",marginBottom:6}}>ملفات مقترحة:</div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
