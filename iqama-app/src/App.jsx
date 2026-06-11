@@ -357,6 +357,12 @@ export default function App() {
   const [renewModal, setRenewModal] = useState(null); // {record} أو null
   const [renewDate, setRenewDate] = useState("");
   const [renewNote, setRenewNote] = useState("");
+  const [driveLinks, setDriveLinks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("drive_links")||"{}"); } catch { return {}; }
+  });
+  const [driveModal, setDriveModal] = useState(null); // {type:"company"|"employee", id, name}
+  const [driveLinkInput, setDriveLinkInput] = useState("");
+  const [driveLinkLabel, setDriveLinkLabel] = useState("");
   const [importModal, setImportModal] = useState(false);
   const [importResult, setImportResult] = useState(null); // {updated, notFound, rows}
   const [notifModal, setNotifModal] = useState(false);
@@ -377,6 +383,7 @@ export default function App() {
   }, []);
 
   useEffect(() => { if(records.length>0) localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }, [records]);
+  useEffect(() => { localStorage.setItem("drive_links", JSON.stringify(driveLinks)); }, [driveLinks]);
 
   const nationalities = ["الكل",...Array.from(new Set(records.map(r=>r.nationality).filter(Boolean))).sort()];
 
@@ -509,6 +516,18 @@ export default function App() {
     } else {
       alert("تم رفض إذن الإشعارات. يمكنك تفعيلها من إعدادات المتصفح.");
     }
+  };
+
+  // ── دوال Google Drive ──
+  const getDriveLinks = (id) => driveLinks[id] || [];
+  const addDriveLink  = (id) => {
+    if (!driveLinkInput.trim()) return;
+    const link = { url: driveLinkInput.trim(), label: driveLinkLabel.trim()||"ملف Drive", addedAt: new Date().toISOString().slice(0,10) };
+    setDriveLinks(prev => ({ ...prev, [id]: [...(prev[id]||[]), link] }));
+    setDriveLinkInput(""); setDriveLinkLabel("");
+  };
+  const removeDriveLink = (id, idx) => {
+    setDriveLinks(prev => ({ ...prev, [id]: (prev[id]||[]).filter((_,i)=>i!==idx) }));
   };
 
   const handleRenew = () => {
@@ -648,11 +667,11 @@ export default function App() {
 
         {/* Tabs */}
         <div style={{display:"flex",gap:8,marginBottom:16}}>
-          {["list","alerts","family","cost","reports"].map(tab=>(
+          {["list","alerts","family","cost","reports","files"].map(tab=>(
             <button key={tab} onClick={()=>setActiveTab(tab)}
               style={{padding:"7px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",
                 background:activeTab===tab?"#8B2500":darkMode?"#161920":"#fff",color:activeTab===tab?"#fff":darkMode?"#f0f2f7":"#374151",border:darkMode&&activeTab!==tab?"1px solid #2a2f3d":"none",boxShadow:darkMode?"0 2px 8px rgba(0,0,0,0.6)":"0 2px 6px rgba(0,0,0,0.07)"}}>
-              {tab==="list"?"📋 الكل":tab==="alerts"?`🔔 تنبيهات ${stats.expired+stats.soon>0?`(${stats.expired+stats.soon})`:""}`:tab==="family"?`👨‍👩‍👧 عائلات (${stats.dependents})`:tab==="cost"?"💰 حاسبة التكلفة":"📊 التقارير"}
+              {tab==="list"?"📋 الكل":tab==="alerts"?`🔔 تنبيهات ${stats.expired+stats.soon>0?`(${stats.expired+stats.soon})`:""}`:tab==="family"?`👨‍👩‍👧 عائلات (${stats.dependents})`:tab==="cost"?"💰 حاسبة التكلفة":tab==="reports"?"📊 التقارير":"📁 الملفات"}
             </button>
           ))}
         </div>
@@ -834,6 +853,10 @@ export default function App() {
                                 </button>
                               )}
                               <button onClick={()=>{setRenewModal(r);setRenewDate("");setRenewNote("");}} title="تجديد الإقامة" style={{background:darkMode?"#1a2a1a":"#f0fdf4",color:"#16a34a",border:"1px solid #86efac",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>🔄</button>
+                              <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");}} title="ملفات Google Drive"
+                                style={{background:darkMode?"#1a1a2e":"#f0f4ff",color:"#4285f4",border:"1px solid #93c5fd",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit",position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
+                                📁{getDriveLinks(r.id).length>0&&<span style={{background:"#4285f4",color:"#fff",borderRadius:10,padding:"0 5px",fontSize:9,fontWeight:800}}>{getDriveLinks(r.id).length}</span>}
+                              </button>
                               <button onClick={()=>handleEdit(r)} style={{background:darkMode?"#1a1f2e":"#eff6ff",color:"#2563eb",border:"1px solid #bfdbfe",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>✏️</button>
                               <button onClick={()=>handleDelete(r.id)} style={{background:darkMode?"#2a1515":"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",borderRadius:6,padding:"4px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>🗑️</button>
                             </div>
@@ -1277,6 +1300,248 @@ export default function App() {
 
 
 
+
+
+        {/* ══════ نافذة Google Drive ══════ */}
+        {driveModal && (
+          <div onClick={()=>setDriveModal(null)}
+            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
+            <div onClick={e=>e.stopPropagation()}
+              style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+
+              {/* هيدر */}
+              <div style={{background:"linear-gradient(135deg,#1a73e8,#4285f4)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+                <div style={{color:"#fff"}}>
+                  <div style={{fontWeight:800,fontSize:17,display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:22}}>📁</span>
+                    ملفات Google Drive
+                  </div>
+                  <div style={{fontSize:12,opacity:.85,marginTop:3}}>{driveModal.name}</div>
+                </div>
+                <button onClick={()=>setDriveModal(null)}
+                  style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:32,height:32,fontSize:16,cursor:"pointer",fontWeight:700}}>✕</button>
+              </div>
+
+              <div style={{padding:"20px 24px",overflowY:"auto",flex:1}}>
+                {/* الروابط الموجودة */}
+                {getDriveLinks(driveModal.id).length===0?(
+                  <div style={{textAlign:"center",padding:"24px 0",color:darkMode?"#a0a8bb":"#6b7280"}}>
+                    <div style={{fontSize:44,marginBottom:8}}>📂</div>
+                    <p style={{fontSize:13}}>لا توجد ملفات مرتبطة بعد</p>
+                    <p style={{fontSize:11,marginTop:4}}>أضف رابط من Google Drive أدناه</p>
+                  </div>
+                ):(
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontSize:13,fontWeight:700,color:darkMode?"#f0f2f7":"#374151",marginBottom:10}}>
+                      الملفات المرتبطة ({getDriveLinks(driveModal.id).length})
+                    </div>
+                    <div style={{display:"grid",gap:8}}>
+                      {getDriveLinks(driveModal.id).map((link,i)=>(
+                        <div key={i} style={{background:darkMode?"#1e222b":"#f8faff",border:`1px solid ${darkMode?"#2a2f3d":"#dbeafe"}`,borderRadius:10,padding:"11px 14px",display:"flex",alignItems:"center",gap:10}}>
+                          <span style={{fontSize:20,flexShrink:0}}>
+                            {link.label.includes("جواز")||link.label.includes("passport")?"🛂":
+                             link.label.includes("عقد")?"📝":
+                             link.label.includes("سجل")?"🏢":
+                             link.label.includes("صورة")||link.label.includes("photo")?"🖼️":
+                             link.label.includes("ترخيص")?"📜":"📄"}
+                          </span>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontWeight:600,fontSize:13,color:darkMode?"#f0f2f7":"#1e3a5f"}}>{link.label}</div>
+                            <div style={{fontSize:10,color:darkMode?"#a0a8bb":"#6b7280",marginTop:2}}>أُضيف: {link.addedAt}</div>
+                          </div>
+                          <div style={{display:"flex",gap:6,flexShrink:0}}>
+                            <a href={link.url} target="_blank" rel="noreferrer"
+                              style={{background:"#1a73e8",color:"#fff",padding:"5px 12px",borderRadius:7,fontSize:12,fontWeight:700,textDecoration:"none",display:"flex",alignItems:"center",gap:4}}>
+                              🔗 فتح
+                            </a>
+                            <button onClick={()=>removeDriveLink(driveModal.id,i)}
+                              style={{background:darkMode?"#2a1515":"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",borderRadius:7,padding:"5px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* إضافة رابط جديد */}
+                <div style={{background:darkMode?"#1e222b":"#f9fafb",border:`1px solid ${darkMode?"#2a2f3d":"#e5e7eb"}`,borderRadius:12,padding:"16px"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:darkMode?"#f0f2f7":"#374151",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+                    ➕ إضافة رابط Drive جديد
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{display:"block",fontSize:11,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>اسم الملف</label>
+                    <input value={driveLinkLabel} onChange={e=>setDriveLinkLabel(e.target.value)}
+                      placeholder="مثال: جواز السفر، عقد العمل، السجل التجاري..."
+                      style={{...inp}}/>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <label style={{display:"block",fontSize:11,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>رابط Google Drive</label>
+                    <input value={driveLinkInput} onChange={e=>setDriveLinkInput(e.target.value)}
+                      placeholder="https://drive.google.com/..."
+                      style={{...inp,direction:"ltr",textAlign:"right"}}/>
+                  </div>
+
+                  {/* تلميح كيف تنسخ الرابط */}
+                  <div style={{background:darkMode?"#161000":"#fefce8",border:`1px solid ${darkMode?"#92400e":"#fcd34d"}`,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:11,color:darkMode?"#fde68a":"#78350f"}}>
+                    💡 <strong>كيف تحصل على الرابط؟</strong> افتح الملف في Drive → كليك يمين → "نسخ الرابط" أو "المشاركة"
+                  </div>
+
+                  <button onClick={()=>addDriveLink(driveModal.id)} disabled={!driveLinkInput.trim()}
+                    style={{width:"100%",background:driveLinkInput.trim()?"#1a73e8":"#d1d5db",color:"#fff",border:"none",borderRadius:10,padding:"10px",fontWeight:700,fontSize:14,cursor:driveLinkInput.trim()?"pointer":"not-allowed",fontFamily:"inherit"}}>
+                    📎 إضافة الرابط
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {/* ══════ تبويب الملفات ══════ */}
+        {activeTab==="files"&&(()=>{
+          const dm = darkMode;
+          const card = {background:dm?"#161920":"#fff",borderRadius:14,padding:"20px 22px",boxShadow:dm?"0 2px 10px rgba(0,0,0,0.5)":"0 2px 10px rgba(0,0,0,0.07)",marginBottom:16};
+
+          const COMPANY_IDS = {
+            "انجال المشاعر": "company_anjal",
+            "دلتا الماسية":  "company_delta",
+          };
+          const COMPANY_DOCS = [
+            "السجل التجاري","الترخيص التجاري","رخصة البلدية","شهادة الزكاة",
+            "عقد التأسيس","الهوية الضريبية","رخصة المنشأة","وثيقة تأمين",
+          ];
+          const EMP_DOCS = ["جواز السفر","تصريح العمل","عقد العمل","صورة شخصية","شهادة مهنية","تأشيرة","إقامة (نسخة)","أخرى"];
+
+          return (
+            <div>
+              {/* ── ملفات الشركتين ── */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:16,marginBottom:0}}>
+                {Object.entries(COMPANY_IDS).map(([compName, compId])=>{
+                  const cc=COMPANY_COLORS[compName]||{bg:"#f9fafb",text:"#374151",border:"#e5e7eb"};
+                  const links=getDriveLinks(compId);
+                  return (
+                    <div key={compId} style={card}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10}}>
+                          <div style={{width:38,height:38,borderRadius:10,background:cc.bg,border:`2px solid ${cc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🏢</div>
+                          <div>
+                            <div style={{fontWeight:800,fontSize:15,color:dm?"#f0f2f7":cc.text}}>{compName}</div>
+                            <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280"}}>{links.length} ملف مرتبط</div>
+                          </div>
+                        </div>
+                        <button onClick={()=>{setDriveModal({type:"company",id:compId,name:compName});setDriveLinkInput("");setDriveLinkLabel("");}}
+                          style={{background:"#1a73e8",color:"#fff",border:"none",borderRadius:9,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
+                          ➕ إضافة ملف
+                        </button>
+                      </div>
+
+                      {/* اقتراحات الملفات */}
+                      <div style={{marginBottom:12}}>
+                        <div style={{fontSize:11,color:dm?"#a0a8bb":"#6b7280",marginBottom:6}}>ملفات مقترحة:</div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                          {COMPANY_DOCS.map(doc=>{
+                            const exists=links.some(l=>l.label===doc);
+                            return (
+                              <span key={doc} style={{background:exists?(dm?"#081a12":"#f0fdf4"):(dm?"#1e222b":"#f9fafb"),color:exists?"#16a34a":(dm?"#a0a8bb":"#6b7280"),border:`1px solid ${exists?"#86efac":(dm?"#2a2f3d":"#e5e7eb")}`,padding:"3px 9px",borderRadius:12,fontSize:11,fontWeight:exists?700:400}}>
+                                {exists?"✅ ":""}{doc}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* الملفات المضافة */}
+                      {links.length===0?(
+                        <div style={{textAlign:"center",padding:"16px 0",color:dm?"#a0a8bb":"#9ca3af",fontSize:12}}>
+                          📂 لم يتم ربط أي ملفات بعد
+                        </div>
+                      ):(
+                        <div style={{display:"grid",gap:6}}>
+                          {links.map((link,i)=>(
+                            <div key={i} style={{background:dm?"#1e222b":"#f8faff",border:`1px solid ${dm?"#2a2f3d":"#dbeafe"}`,borderRadius:9,padding:"9px 12px",display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontSize:16}}>📄</span>
+                              <div style={{flex:1}}>
+                                <div style={{fontWeight:600,fontSize:12,color:dm?"#f0f2f7":"#1e3a5f"}}>{link.label}</div>
+                                <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280"}}>أُضيف: {link.addedAt}</div>
+                              </div>
+                              <a href={link.url} target="_blank" rel="noreferrer"
+                                style={{background:"#1a73e8",color:"#fff",padding:"4px 10px",borderRadius:7,fontSize:11,fontWeight:700,textDecoration:"none"}}>
+                                🔗 فتح
+                              </a>
+                              <button onClick={()=>removeDriveLink(compId,i)}
+                                style={{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:14,padding:"2px 4px"}}>🗑️</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* ── ملفات الموظفين ── */}
+              <div style={card}>
+                <div style={{fontWeight:800,fontSize:15,color:dm?"#f0f2f7":"#1e3a5f",marginBottom:4,display:"flex",alignItems:"center",gap:8}}>
+                  👤 ملفات الموظفين والمرافقين
+                  <span style={{background:dm?"#1e222b":"#f3f4f6",color:dm?"#a0a8bb":"#6b7280",padding:"2px 10px",borderRadius:10,fontSize:12,fontWeight:600}}>
+                    {records.filter(r=>getDriveLinks(r.id).length>0).length} لديهم ملفات
+                  </span>
+                </div>
+                <p style={{fontSize:12,color:dm?"#a0a8bb":"#6b7280",marginBottom:16}}>
+                  لإضافة ملف لموظف، اضغط زر 📁 في بطاقته بتبويب "القائمة"
+                </p>
+
+                {/* فلتر الملفات */}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
+                  {records.filter(r=>getDriveLinks(r.id).length>0).map(r=>{
+                    const links=getDriveLinks(r.id);
+                    const cc=COMPANY_COLORS[r.company]||{bg:"#f9fafb",text:"#374151",border:"#e5e7eb"};
+                    return (
+                      <div key={r.id} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:12,border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,padding:"14px",display:"flex",flexDirection:"column",gap:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                          <div>
+                            <div style={{fontWeight:700,fontSize:13,color:dm?"#f0f2f7":"#1e3a5f"}}>{r.name}</div>
+                            <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>
+                              <span style={{background:cc.bg,color:cc.text,border:`1px solid ${cc.border}`,padding:"1px 7px",borderRadius:6,fontSize:10}}>{r.company}</span>
+                              <span style={{background:dm?"#1c1f26":"#f3f4f6",color:dm?"#a0a8bb":"#6b7280",padding:"1px 7px",borderRadius:6,fontSize:10}}>🪪 {r.iqamaNumber}</span>
+                            </div>
+                          </div>
+                          <button onClick={()=>{setDriveModal({type:"employee",id:r.id,name:r.name});setDriveLinkInput("");setDriveLinkLabel("");}}
+                            style={{background:"#1a73e8",color:"#fff",border:"none",borderRadius:8,padding:"5px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,flexShrink:0}}>
+                            ➕
+                          </button>
+                        </div>
+                        <div style={{display:"grid",gap:5}}>
+                          {links.map((link,i)=>(
+                            <div key={i} style={{background:dm?"#161920":"#fff",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,borderRadius:8,padding:"7px 10px",display:"flex",alignItems:"center",gap:7}}>
+                              <span style={{fontSize:14}}>
+                                {link.label.includes("جواز")?"🛂":link.label.includes("عقد")?"📝":link.label.includes("صورة")?"🖼️":"📄"}
+                              </span>
+                              <div style={{flex:1,fontSize:11,fontWeight:600,color:dm?"#e8eaf0":"#374151"}}>{link.label}</div>
+                              <a href={link.url} target="_blank" rel="noreferrer"
+                                style={{background:"#1a73e8",color:"#fff",padding:"3px 9px",borderRadius:6,fontSize:11,fontWeight:700,textDecoration:"none",flexShrink:0}}>
+                                🔗
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {records.filter(r=>getDriveLinks(r.id).length>0).length===0&&(
+                    <div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 0",color:dm?"#a0a8bb":"#9ca3af"}}>
+                      <div style={{fontSize:44,marginBottom:8}}>📁</div>
+                      <p>لم يتم ربط ملفات Drive لأي موظف بعد</p>
+                      <p style={{fontSize:12,marginTop:4}}>اضغط زر 📁 في بطاقة الموظف لإضافة ملفاته</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ══════ نافذة نتيجة الاستيراد ══════ */}
         {importModal && importResult && (
