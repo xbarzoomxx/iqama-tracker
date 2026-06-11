@@ -349,7 +349,9 @@ export default function App() {
   const [calcSelectedIds, setCalcSelectedIds] = useState(new Set()); // Set فارغ = الكل محدد
   const [calcIncludeDeps, setCalcIncludeDeps] = useState({});
   const [calcStatusFilter, setCalcStatusFilter] = useState("all"); // all | expired | soon | valid
-  const [calcBacklogOnly, setCalcBacklogOnly] = useState(false); // وضع المتأخر فقط
+  const [calcBacklogOnly, setCalcBacklogOnly] = useState(false);
+  const [selectedReports, setSelectedReports] = useState(new Set(["status","company","nationality","jobs","location","calendar","costs","renewed"]));
+  const [showExportReports, setShowExportReports] = useState(false); // وضع المتأخر فقط
   const [darkMode, setDarkMode] = useState(false);
   const [modalCard, setModalCard] = useState(null);
   const [renewModal, setRenewModal] = useState(null); // {record} أو null
@@ -1500,6 +1502,309 @@ export default function App() {
           const titleStyle = {fontSize:15,fontWeight:800,color:dm?"#f0f2f7":"#1e3a5f",marginBottom:16,display:"flex",alignItems:"center",gap:8};
           const fmt = n => n.toLocaleString("ar-SA") + " ريال";
 
+          // قائمة التقارير المتاحة
+          const REPORT_LIST = [
+            {id:"status",      label:"⏳ حالة الإقامة",          desc:"توزيع السارية والمنتهية"},
+            {id:"company",     label:"🏢 توزيع الشركة",          desc:"انجال المشاعر ودلتا الماسية"},
+            {id:"nationality", label:"🏆 توزيع الجنسية",         desc:"جميع الجنسيات بنسبها"},
+            {id:"jobs",        label:"💼 تقرير المهن التفصيلي",   desc:"جميع المهن مع أسماء الموظفين"},
+            {id:"location",    label:"🌍 داخل وخارج المملكة",     desc:"تقرير الوجود والغياب"},
+            {id:"calendar",    label:"📅 تقويم الانتهاء",        desc:"الإقامات المنتهية شهرياً"},
+            {id:"costs",       label:"💰 تكاليف التجديد",        desc:"التكاليف الشهرية المتوقعة"},
+            {id:"renewed",     label:"✅ الإقامات المجددة",       desc:"سجل التجديدات وتكلفتها"},
+          ];
+
+          const toggleReport = (id) => {
+            const next = new Set(selectedReports);
+            if(next.has(id)) { if(next.size>1) next.delete(id); }
+            else next.add(id);
+            setSelectedReports(next);
+          };
+
+          // ── تصدير Excel للتقارير ──
+          const exportReportsExcel = () => {
+            const wb = XLSX.utils.book_new();
+
+            if(selectedReports.has("status")) {
+              const ws = XLSX.utils.json_to_sheet([
+                {الحالة:"سارية",        العدد:records.filter(r=>getStatus(r)==="سارية").length},
+                {الحالة:"تنتهي قريباً",العدد:records.filter(r=>getStatus(r)==="تنتهي قريباً").length},
+                {الحالة:"منتهية",       العدد:records.filter(r=>getStatus(r)==="منتهية").length},
+                {الحالة:"قيد التجديد", العدد:records.filter(r=>getStatus(r)==="قيد التجديد").length},
+                {الحالة:"مرافق",        العدد:records.filter(r=>r.type==="مرافق").length},
+              ]);
+              ws["!cols"]=[{wch:18},{wch:10}];
+              XLSX.utils.book_append_sheet(wb, ws, "حالة الإقامة");
+            }
+
+            if(selectedReports.has("nationality")) {
+              const natMap={};
+              records.forEach(r=>{if(r.nationality)natMap[r.nationality]=(natMap[r.nationality]||0)+1;});
+              const ws = XLSX.utils.json_to_sheet(
+                Object.entries(natMap).sort((a,b)=>b[1]-a[1]).map(([n,c])=>({
+                  الجنسية:n, العدد:c, النسبة:`${(c/records.length*100).toFixed(1)}%`
+                }))
+              );
+              ws["!cols"]=[{wch:16},{wch:10},{wch:10}];
+              XLSX.utils.book_append_sheet(wb, ws, "توزيع الجنسية");
+            }
+
+            if(selectedReports.has("company")) {
+              const ws = XLSX.utils.json_to_sheet([
+                {الشركة:"انجال المشاعر",العدد:records.filter(r=>r.company==="انجال المشاعر").length},
+                {الشركة:"دلتا الماسية", العدد:records.filter(r=>r.company==="دلتا الماسية").length},
+                {الشركة:"موظفون",        العدد:records.filter(r=>r.type!=="مرافق").length},
+                {الشركة:"مرافقون",       العدد:records.filter(r=>r.type==="مرافق").length},
+              ]);
+              ws["!cols"]=[{wch:18},{wch:10}];
+              XLSX.utils.book_append_sheet(wb, ws, "توزيع الشركة");
+            }
+
+            if(selectedReports.has("jobs")) {
+              // ورقة 1: ملخص المهن
+              const jobMap={};
+              records.filter(r=>r.type!=="مرافق").forEach(r=>{
+                const j=(r.jobTitle||r.notes||"غير محدد").trim();
+                if(j)jobMap[j]=(jobMap[j]||0)+1;
+              });
+              const wsSummary = XLSX.utils.json_to_sheet(
+                Object.entries(jobMap).sort((a,b)=>b[1]-a[1]).map(([j,c])=>({
+                  المهنة:j, العدد:c, النسبة:`${(c/records.filter(r=>r.type!=="مرافق").length*100).toFixed(1)}%`
+                }))
+              );
+              wsSummary["!cols"]=[{wch:32},{wch:10},{wch:10}];
+              XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص المهن");
+              // ورقة 2: تفصيل بأسماء الموظفين
+              const wsDetail = XLSX.utils.json_to_sheet(
+                records.filter(r=>r.type!=="مرافق")
+                  .sort((a,b)=>(a.jobTitle||a.notes||"").localeCompare(b.jobTitle||b.notes||"","ar"))
+                  .map(r=>({
+                    المهنة: r.jobTitle||r.notes||"غير محدد",
+                    الاسم: r.name,
+                    "رقم الإقامة": r.iqamaNumber,
+                    الجنسية: r.nationality||"-",
+                    الشركة: r.company,
+                    "حالة الإقامة": getStatus(r),
+                  }))
+              );
+              wsDetail["!cols"]=[{wch:30},{wch:28},{wch:14},{wch:12},{wch:18},{wch:14}];
+              XLSX.utils.book_append_sheet(wb, wsDetail, "تفصيل الموظفين بالمهنة");
+            }
+
+            if(selectedReports.has("location")) {
+              const inside  = records.filter(r=>r.outsideKingdom!=="نعم");
+              const outside = records.filter(r=>r.outsideKingdom==="نعم");
+              // ملخص
+              const wsSummary = XLSX.utils.json_to_sheet([
+                {الوجود:"داخل المملكة", العدد:inside.length,  النسبة:`${(inside.length/records.length*100).toFixed(1)}%`},
+                {الوجود:"خارج المملكة", العدد:outside.length, النسبة:`${(outside.length/records.length*100).toFixed(1)}%`},
+              ]);
+              wsSummary["!cols"]=[{wch:18},{wch:10},{wch:10}];
+              XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الوجود");
+              // خارج المملكة تفصيل
+              const wsOut = XLSX.utils.json_to_sheet(
+                outside.map(r=>({
+                  الاسم: r.name, "رقم الإقامة": r.iqamaNumber,
+                  الجنسية: r.nationality||"-", المهنة: r.jobTitle||r.notes||"-",
+                  الشركة: r.company, "حالة الإقامة": getStatus(r),
+                  "تاريخ الانتهاء": r.expiryDate||"-",
+                }))
+              );
+              wsOut["!cols"]=[{wch:28},{wch:14},{wch:12},{wch:28},{wch:18},{wch:14},{wch:14}];
+              XLSX.utils.book_append_sheet(wb, wsOut, "خارج المملكة");
+            }
+
+            if(selectedReports.has("calendar")||selectedReports.has("costs")) {
+              const now=new Date();
+              const rows=[];
+              for(let i=0;i<12;i++){
+                const m=new Date(now.getFullYear(),now.getMonth()+i,1);
+                const nextM=new Date(now.getFullYear(),now.getMonth()+i+1,1);
+                const label=m.toLocaleDateString("ar-SA",{month:"long",year:"numeric"});
+                const expCount=records.filter(r=>{
+                  if(!r.expiryDate)return false;
+                  const d=new Date(r.expiryDate);
+                  return d>=m&&d<nextM;
+                }).length;
+                const cost=records.filter(r=>{
+                  if(!r.expiryDate||r.type==="مرافق")return false;
+                  const d=new Date(r.expiryDate);
+                  return d>=m&&d<nextM;
+                }).length*(2425+163)+records.filter(r=>{
+                  if(!r.expiryDate||r.type!=="مرافق")return false;
+                  const head=records.find(e=>e.iqamaNumber===r.familyHeadId);
+                  if(!head?.expiryDate)return false;
+                  const d=new Date(head.expiryDate);
+                  return d>=m&&d<nextM;
+                }).length*1200;
+                rows.push({الشهر:label,"عدد المنتهية":expCount,"تكلفة التجديد (ريال)":cost});
+              }
+              const ws=XLSX.utils.json_to_sheet(rows);
+              ws["!cols"]=[{wch:20},{wch:16},{wch:20}];
+              XLSX.utils.book_append_sheet(wb, ws, "التقويم والتكاليف");
+            }
+
+            if(selectedReports.has("renewed")) {
+              const renewed=records.filter(r=>r.lastRenewalDate);
+              const ws=XLSX.utils.json_to_sheet(renewed.map(r=>({
+                الاسم:r.name,
+                "رقم الإقامة":r.iqamaNumber,
+                النوع:r.type==="مرافق"?"مرافق":"موظف",
+                الشركة:r.company,
+                "تاريخ آخر تجديد":r.lastRenewalDate,
+                "تاريخ الانتهاء الجديد":r.expiryDate,
+                "التكلفة (ريال)":r.type!=="مرافق"?2588:1200,
+                الملاحظة:r.lastRenewalNote||"",
+              })));
+              ws["!cols"]=[{wch:28},{wch:14},{wch:10},{wch:18},{wch:16},{wch:18},{wch:14},{wch:24}];
+              XLSX.utils.book_append_sheet(wb, ws, "الإقامات المجددة");
+            }
+
+            XLSX.writeFile(wb, `تقارير_الإقامات_${new Date().toISOString().slice(0,10)}.xlsx`);
+          };
+
+          // ── تصدير PDF للتقارير ──
+          const exportReportsPDF = () => {
+            const today=new Date().toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric"});
+            let sections="";
+
+            if(selectedReports.has("status")) {
+              const data=[
+                {l:"سارية",c:records.filter(r=>getStatus(r)==="سارية").length,col:"#16a34a"},
+                {l:"تنتهي قريباً",c:records.filter(r=>getStatus(r)==="تنتهي قريباً").length,col:"#d97706"},
+                {l:"منتهية",c:records.filter(r=>getStatus(r)==="منتهية").length,col:"#dc2626"},
+                {l:"مرافق",c:records.filter(r=>r.type==="مرافق").length,col:"#7c3aed"},
+              ];
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">⏳ حالة الإقامة</h2>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+              ${data.map(d=>`<div style="background:#f9fafb;border:1px solid #e5e7eb;border-top:3px solid ${d.col};border-radius:8px;padding:12px;text-align:center">
+                <div style="font-size:26px;font-weight:800;color:${d.col}">${d.c}</div>
+                <div style="font-size:11px;color:#6b7280">${d.l}</div>
+              </div>`).join("")}</div>`;
+            }
+
+            if(selectedReports.has("nationality")) {
+              const natMap={};
+              records.forEach(r=>{if(r.nationality)natMap[r.nationality]=(natMap[r.nationality]||0)+1;});
+              const sorted=Object.entries(natMap).sort((a,b)=>b[1]-a[1]);
+              const natColors=["#6B1A1A","#F5A800","#2563eb","#16a34a","#d97706","#7c3aed"];
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">🏆 توزيع الجنسية</h2>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px">
+              <thead><tr style="background:#6B1A1A;color:#fff"><th style="padding:8px">الجنسية</th><th style="padding:8px">العدد</th><th style="padding:8px">النسبة</th><th style="padding:8px;width:40%">التوزيع</th></tr></thead>
+              <tbody>${sorted.map(([n,c],i)=>`<tr style="background:${i%2===0?"#f9fafb":"#fff"}">
+                <td style="padding:7px;text-align:center;font-weight:600">${n}</td>
+                <td style="padding:7px;text-align:center;font-weight:700;color:${natColors[i%natColors.length]}">${c}</td>
+                <td style="padding:7px;text-align:center">${(c/records.length*100).toFixed(1)}%</td>
+                <td style="padding:7px"><div style="height:14px;background:${natColors[i%natColors.length]};border-radius:4px;width:${(c/records.length*100).toFixed(0)}%"></div></td>
+              </tr>`).join("")}</tbody></table>`;
+            }
+
+            if(selectedReports.has("jobs")) {
+              const jobMap={};
+              const empOnly=records.filter(r=>r.type!=="مرافق");
+              empOnly.forEach(r=>{const j=(r.jobTitle||r.notes||"غير محدد").trim();if(j)jobMap[j]=(jobMap[j]||0)+1;});
+              const sorted=Object.entries(jobMap).sort((a,b)=>b[1]-a[1]);
+              // تجميع الموظفين بالمهنة
+              const byJob={};
+              empOnly.forEach(r=>{const j=(r.jobTitle||r.notes||"غير محدد").trim();if(!byJob[j])byJob[j]=[];byJob[j].push(r);});
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">💼 تقرير المهن التفصيلي (${empOnly.length} موظف - ${sorted.length} مهنة)</h2>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:11px">
+              <thead><tr style="background:#6B1A1A;color:#fff"><th style="padding:7px">#</th><th style="padding:7px">المهنة</th><th style="padding:7px">العدد</th><th style="padding:7px">النسبة</th><th style="padding:7px">الأسماء</th></tr></thead>
+              <tbody>${sorted.map(([j,c],i)=>`<tr style="background:${i%2===0?"#f9fafb":"#fff"}">
+                <td style="padding:6px;text-align:center;font-weight:700">${i+1}</td>
+                <td style="padding:6px;font-weight:700;color:#6B1A1A">${j}</td>
+                <td style="padding:6px;text-align:center;font-weight:800;color:#6B1A1A">${c}</td>
+                <td style="padding:6px;text-align:center">${(c/empOnly.length*100).toFixed(1)}%</td>
+                <td style="padding:6px;font-size:10px;color:#374151">${(byJob[j]||[]).map(r=>r.name).join(" · ")}</td>
+              </tr>`).join("")}</tbody></table>
+              <div style="margin-bottom:20px;font-size:10px;color:#6b7280;text-align:left">* المهن مرتبة تنازلياً حسب العدد</div>`;
+            }
+
+            if(selectedReports.has("location")) {
+              const inside  = records.filter(r=>r.outsideKingdom!=="نعم");
+              const outside = records.filter(r=>r.outsideKingdom==="نعم");
+              const insideEmp  = inside.filter(r=>r.type!=="مرافق");
+              const outsideEmp = outside.filter(r=>r.type!=="مرافق");
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">🌍 تقرير الوجود داخل وخارج المملكة</h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;text-align:center">
+                  <div style="font-size:28px;font-weight:800;color:#16a34a">${inside.length}</div>
+                  <div style="font-size:13px;font-weight:700;color:#15803d">🏠 داخل المملكة</div>
+                  <div style="font-size:11px;color:#6b7280;margin-top:4px">(${(inside.length/records.length*100).toFixed(1)}%) — ${insideEmp.length} موظف + ${inside.length-insideEmp.length} مرافق</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:14px;text-align:center">
+                  <div style="font-size:28px;font-weight:800;color:#dc2626">${outside.length}</div>
+                  <div style="font-size:13px;font-weight:700;color:#dc2626">✈️ خارج المملكة</div>
+                  <div style="font-size:11px;color:#6b7280;margin-top:4px">(${(outside.length/records.length*100).toFixed(1)}%) — ${outsideEmp.length} موظف + ${outside.length-outsideEmp.length} مرافق</div>
+                </div>
+              </div>
+              ${outside.length>0?`<h3 style="color:#dc2626;margin-bottom:8px;font-size:13px">✈️ المتواجدون خارج المملكة (${outside.length})</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:11px">
+              <thead><tr style="background:#dc2626;color:#fff"><th style="padding:7px">الاسم</th><th style="padding:7px">الجنسية</th><th style="padding:7px">المهنة</th><th style="padding:7px">الشركة</th><th style="padding:7px">حالة الإقامة</th></tr></thead>
+              <tbody>${outside.map((r,i)=>`<tr style="background:${i%2===0?"#fef2f2":"#fff"}">
+                <td style="padding:6px;font-weight:600">${r.name}</td>
+                <td style="padding:6px;text-align:center">${r.nationality||"-"}</td>
+                <td style="padding:6px">${r.jobTitle||r.notes||"-"}</td>
+                <td style="padding:6px;text-align:center">${r.company}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:${getStatus(r)==="منتهية"?"#dc2626":getStatus(r)==="تنتهي قريباً"?"#d97706":"#16a34a"}">${getStatus(r)}</td>
+              </tr>`).join("")}</tbody></table>`:""}`;
+            }
+
+            if(selectedReports.has("calendar")||selectedReports.has("costs")) {
+              const now=new Date();
+              const rows=[];
+              for(let i=0;i<12;i++){
+                const m=new Date(now.getFullYear(),now.getMonth()+i,1);
+                const nextM=new Date(now.getFullYear(),now.getMonth()+i+1,1);
+                const label=m.toLocaleDateString("ar-SA",{month:"long",year:"numeric"});
+                const expCount=records.filter(r=>{if(!r.expiryDate)return false;const d=new Date(r.expiryDate);return d>=m&&d<nextM;}).length;
+                const cost=records.filter(r=>{if(!r.expiryDate||r.type==="مرافق")return false;const d=new Date(r.expiryDate);return d>=m&&d<nextM;}).length*(2425+163);
+                rows.push({label,expCount,cost});
+              }
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">📅 تقويم الانتهاء والتكاليف الشهرية</h2>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px">
+              <thead><tr style="background:#6B1A1A;color:#fff"><th style="padding:8px">الشهر</th><th style="padding:8px">عدد المنتهية</th><th style="padding:8px">تكلفة التجديد</th></tr></thead>
+              <tbody>${rows.map((r,i)=>`<tr style="background:${i%2===0?"#f9fafb":"#fff"}">
+                <td style="padding:7px;font-weight:600">${r.label}</td>
+                <td style="padding:7px;text-align:center;font-weight:700;color:${r.expCount>3?"#dc2626":r.expCount>0?"#d97706":"#16a34a"}">${r.expCount}</td>
+                <td style="padding:7px;text-align:center;font-weight:700;color:#16a34a">${r.cost.toLocaleString("ar-SA")} ريال</td>
+              </tr>`).join("")}</tbody></table>`;
+            }
+
+            if(selectedReports.has("renewed")) {
+              const renewed=records.filter(r=>r.lastRenewalDate);
+              const totalCost=renewed.filter(r=>r.type!=="مرافق").length*2588+renewed.filter(r=>r.type==="مرافق").length*1200;
+              sections+=`<h2 style="color:#6B1A1A;border-bottom:2px solid #6B1A1A;padding-bottom:6px">✅ الإقامات المجددة (${renewed.length} سجل)</h2>
+              ${renewed.length===0?'<p style="color:#6b7280;text-align:center;padding:20px">لا توجد تجديدات مسجلة</p>':`
+              <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-size:11px">
+              <thead><tr style="background:#6B1A1A;color:#fff"><th style="padding:7px">الاسم</th><th style="padding:7px">الشركة</th><th style="padding:7px">تاريخ التجديد</th><th style="padding:7px">ينتهي</th><th style="padding:7px">التكلفة</th></tr></thead>
+              <tbody>${renewed.sort((a,b)=>new Date(b.lastRenewalDate)-new Date(a.lastRenewalDate)).map((r,i)=>`<tr style="background:${i%2===0?"#f9fafb":"#fff"}">
+                <td style="padding:6px;font-weight:600">${r.name}</td>
+                <td style="padding:6px;text-align:center">${r.company}</td>
+                <td style="padding:6px;text-align:center">${new Date(r.lastRenewalDate).toLocaleDateString("ar-SA")}</td>
+                <td style="padding:6px;text-align:center">${r.expiryDate?new Date(r.expiryDate).toLocaleDateString("ar-SA"):"—"}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:#16a34a">${(r.type!=="مرافق"?2588:1200).toLocaleString("ar-SA")} ر</td>
+              </tr>`).join("")}</tbody></table>
+              <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between">
+                <span style="font-weight:700;color:#15803d">إجمالي تكلفة التجديدات</span>
+                <span style="font-weight:900;font-size:16px;color:#15803d">${totalCost.toLocaleString("ar-SA")} ريال</span>
+              </div>`}`;
+            }
+
+            const html=`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقارير الإقامات</title>
+            <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,sans-serif;direction:rtl;padding:24px;color:#1f2937;font-size:13px}
+            .header{background:linear-gradient(135deg,#6B1A1A,#F5A800);color:#fff;padding:20px 24px;border-radius:12px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+            @media print{body{padding:12px}}</style></head><body>
+            <div class="header">
+              <div><h1 style="font-size:18px;font-weight:800">📊 تقارير متابعة الإقامات</h1><p style="opacity:.85;margin-top:4px;font-size:12px">تاريخ التقرير: ${today}</p></div>
+              <div style="text-align:left;font-size:12px">إجمالي السجلات: <strong>${records.length}</strong></div>
+            </div>
+            ${sections}
+            <script>window.onload=()=>window.print();</script></body></html>`;
+            const win=window.open(URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})),"_blank");
+            if(!win)alert("يرجى السماح بفتح النوافذ المنبثقة");
+          };
+
           // ── بيانات التقارير ──
           const employees = records.filter(r=>r.type!=="مرافق");
 
@@ -1600,11 +1905,56 @@ export default function App() {
 
           return (
             <div>
+              {/* ── شريط التخصيص والتصدير ── */}
+              <div style={{background:dm?"#161920":"#fff",borderRadius:14,padding:"18px 22px",marginBottom:18,boxShadow:dm?"0 2px 10px rgba(0,0,0,0.5)":"0 2px 10px rgba(0,0,0,0.07)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,marginBottom:14}}>
+                  <div style={{fontWeight:800,fontSize:15,color:dm?"#f0f2f7":"#1e3a5f",display:"flex",alignItems:"center",gap:8}}>
+                    📊 تخصيص التقارير
+                    <span style={{background:dm?"#1e222b":"#f3f4f6",color:dm?"#a0a8bb":"#6b7280",padding:"2px 10px",borderRadius:10,fontSize:12,fontWeight:600}}>
+                      {selectedReports.size} من {REPORT_LIST.length} محدد
+                    </span>
+                  </div>
+                  {/* أزرار التصدير */}
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>{const next=new Set(REPORT_LIST.map(r=>r.id));setSelectedReports(next);}}
+                      style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${dm?"#2a2f3d":"#d1d5db"}`,background:dm?"#1e222b":"#f9fafb",color:dm?"#f0f2f7":"#374151",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+                      ✅ تحديد الكل
+                    </button>
+                    <button onClick={exportReportsExcel}
+                      style={{padding:"6px 16px",borderRadius:8,border:"1px solid #86efac",background:dm?"#081a12":"#f0fdf4",color:"#16a34a",fontSize:13,cursor:"pointer",fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",gap:5}}>
+                      📊 Excel
+                    </button>
+                    <button onClick={exportReportsPDF}
+                      style={{padding:"6px 16px",borderRadius:8,border:"1px solid #fca5a5",background:dm?"#2a1515":"#fef2f2",color:"#dc2626",fontSize:13,cursor:"pointer",fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",gap:5}}>
+                      📄 PDF
+                    </button>
+                  </div>
+                </div>
+                {/* بطاقات اختيار التقارير */}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+                  {REPORT_LIST.map(r=>{
+                    const isSelected = selectedReports.has(r.id);
+                    return (
+                      <div key={r.id} onClick={()=>toggleReport(r.id)}
+                        style={{border:`2px solid ${isSelected?"#6B1A1A":dm?"#2a2f3d":"#e5e7eb"}`,borderRadius:10,padding:"10px 14px",cursor:"pointer",background:isSelected?(dm?"#2d0f0f":"#fdf0f0"):(dm?"#1e222b":"#fafafa"),transition:"all 0.15s",display:"flex",alignItems:"center",gap:10}}>
+                        <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${isSelected?"#6B1A1A":dm?"#4b5563":"#d1d5db"}`,background:isSelected?"#6B1A1A":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          {isSelected&&<span style={{color:"#fff",fontSize:11,fontWeight:900}}>✓</span>}
+                        </div>
+                        <div>
+                          <div style={{fontSize:13,fontWeight:700,color:isSelected?"#6B1A1A":(dm?"#f0f2f7":"#374151")}}>{r.label}</div>
+                          <div style={{fontSize:10,color:dm?"#a0a8bb":"#6b7280",marginTop:1}}>{r.desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* ── صف 1: حالة الإقامة + الشركة ── */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16,marginBottom:0}}>
 
                 {/* حالة الإقامة - Donut */}
-                <div style={card}>
+                {selectedReports.has("status")&&<div style={card}>
                   <div style={titleStyle}>⏳ توزيع حالة الإقامة</div>
                   <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
                     <DonutChart data={statusData} size={160}/>
@@ -1622,7 +1972,7 @@ export default function App() {
                 </div>
 
                 {/* الشركة - Bar */}
-                <div style={card}>
+                {selectedReports.has("company")&&<div style={card}>
                   <div style={titleStyle}>🏢 توزيع حسب الشركة</div>
                   {compData.map(d=>(
                     <div key={d.label} style={{marginBottom:14}}>
@@ -1647,10 +1997,11 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+                </div>}
               </div>
 
               {/* ── صف 2: الجنسية ── */}
-              <div style={card}>
+              {selectedReports.has("nationality")&&<div style={card}>
                 <div style={titleStyle}>🏆 توزيع حسب الجنسية</div>
                 <div style={{display:"grid",gap:10}}>
                   {natData.map(([nat,cnt],i)=>(
@@ -1669,7 +2020,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── صف 3: المهن ── */}
+              </div>}
+              {/* ── صف 3: المهن ── */
               <div style={card}>
                 <div style={titleStyle}>💼 أكثر المهن شيوعاً</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
@@ -1682,7 +2034,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── صف 4: تقويم الانتهاء الشهري ── */}
+              </div>}
+              {/* ── صف 4: تقويم الانتهاء الشهري ── */
               <div style={card}>
                 <div style={titleStyle}>📅 تقويم الإقامات المنتهية شهرياً (12 شهر قادم)</div>
                 <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,overflowX:"auto",paddingBottom:4}}>
@@ -1710,7 +2063,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── صف 5: التكاليف الشهرية ── */}
+              </div>}
+              {/* ── صف 5: التكاليف الشهرية ── */
               <div style={card}>
                 <div style={titleStyle}>💰 تكاليف التجديد المتوقعة شهرياً (السنة القادمة)</div>
                 <div style={{display:"flex",gap:6,alignItems:"flex-end",height:150,overflowX:"auto",paddingBottom:4}}>
@@ -1731,7 +2085,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── صف 6: الإقامات المجددة ── */}
+              </div>}
+              {/* ── صف 6: الإقامات المجددة ── */
               <div style={card}>
                 <div style={titleStyle}>✅ الإقامات التي تم تجديدها</div>
                 {renewedRecords.length===0?(
