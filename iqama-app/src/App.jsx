@@ -694,6 +694,9 @@ export default function App() {
 
 
 
+  // ── متغيرات مشتركة ──
+  const inp={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
+
   // شاشة التحميل
   if (user === undefined) return (
     <div style={{minHeight:"100vh",background:darkMode?"#0d0f13":"#f5f0eb",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',Tahoma,sans-serif"}}>
@@ -1881,7 +1884,9 @@ export default function App() {
 
 
         {/* ══════ نافذة تعديل الرابط ══════ */}
-        {editLinkModal&&(
+        {editLinkModal&&(()=>{
+          const inpStyle={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
+          return (
           <div onClick={()=>setEditLinkModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:460,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
               <div style={{background:"linear-gradient(135deg,#1a73e8,#4285f4)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -1892,17 +1897,17 @@ export default function App() {
                 <div style={{marginBottom:12}}>
                   <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>اسم الملف</label>
                   <input value={editLinkModal.link.label} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,label:e.target.value}}))}
-                    style={{...inp}}/>
+                    style={{...inpStyle}}/>
                 </div>
                 <div style={{marginBottom:12}}>
                   <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>رابط Google Drive</label>
                   <input value={editLinkModal.link.url} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,url:e.target.value}}))}
-                    style={{...inp,direction:"ltr",textAlign:"right"}}/>
+                    style={{...inpStyle,direction:"ltr",textAlign:"right"}}/>
                 </div>
                 <div style={{marginBottom:20}}>
                   <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:5}}>📅 تاريخ انتهاء المستند</label>
                   <input type="date" value={editLinkModal.link.expiryDate||""} onChange={e=>setEditLinkModal(p=>({...p,link:{...p.link,expiryDate:e.target.value}}))}
-                    style={{...inp,direction:"ltr"}}/>
+                    style={{...inpStyle,direction:"ltr"}}/>
                 </div>
                 <div style={{display:"flex",gap:10}}>
                   <button onClick={()=>{updateDriveLink(editLinkModal.id,editLinkModal.index,editLinkModal.link);setEditLinkModal(null);}}
@@ -1917,10 +1922,13 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ══════ نافذة تعديل السجل التجاري ══════ */}
-        {editCrModal&&(
+        {editCrModal&&(()=>{
+          const inpStyle={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
+          return (
           <div onClick={()=>setEditCrModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
               <div style={{background:"linear-gradient(135deg,#6B1A1A,#F5A800)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
@@ -1949,7 +1957,7 @@ export default function App() {
                   <div key={f.k} style={{marginBottom:12}}>
                     <label style={{display:"block",fontSize:12,fontWeight:600,color:darkMode?"#a0a8bb":"#6b7280",marginBottom:4}}>{f.l}</label>
                     <input type={f.type||"text"} value={editCrModal.data[f.k]||""} onChange={e=>setEditCrModal(p=>({...p,data:{...p.data,[f.k]:e.target.value}}))}
-                      style={{...inp,direction:f.type==="date"?"ltr":"rtl"}}/>
+                      style={{...inpStyle,direction:f.type==="date"?"ltr":"rtl"}}/>
                   </div>
                 ))}
               </div>
@@ -1965,7 +1973,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
 {/* ══════ نافذة Google Drive ══════ */}
         {driveModal && (
