@@ -447,6 +447,7 @@ export default function App() {
   const [calcIncludeDeps, setCalcIncludeDeps] = useState({});
   const [calcStatusFilter, setCalcStatusFilter] = useState("all"); // all | expired | soon | valid
   const [calcBacklogOnly, setCalcBacklogOnly] = useState(false);
+  const [showFilterHelp, setShowFilterHelp] = useState(false);
   const [selectedReports, setSelectedReports] = useState(new Set(["status","company","nationality","jobs","location","calendar","costs","renewed"]));
   const [showExportReports, setShowExportReports] = useState(false); // وضع المتأخر فقط
   const [darkMode, setDarkMode] = useState(false);
@@ -865,24 +866,30 @@ export default function App() {
                 <option value="company">ترتيب: الشركة</option>
               </select>
               <span style={{color:darkMode?"#a0a8bb":"#6b7280",fontSize:12,whiteSpace:"nowrap"}}>{filtered.length} سجل</span>
+              {/* زر إظهار/إخفاء الشرح */}
+              <button onClick={()=>setShowFilterHelp(h=>!h)}
+                style={{background:"none",border:`1px solid ${darkMode?"#2a2f3d":"#dbeafe"}`,color:darkMode?"#93c5fd":"#2563eb",borderRadius:7,padding:"3px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                💡 دليل
+              </button>
             </div>
-            {/* شرح الفلاتر */}
-            <div style={{background:darkMode?"#1e222b":"#f8faff",borderRadius:10,padding:"10px 16px",marginBottom:12,border:`1px solid ${darkMode?"#2a2f3d":"#dbeafe"}`,display:"flex",flexWrap:"wrap",gap:12,alignItems:"center"}}>
-              <span style={{fontSize:12,fontWeight:700,color:darkMode?"#93c5fd":"#2563eb"}}>💡 دليل الفلاتر:</span>
-              {[
-                {label:"🔍 البحث",desc:"ابحث بالاسم أو رقم الإقامة أو المهنة"},
-                {label:"🏢 الشركة",desc:"فلترة حسب الشركة"},
-                {label:"👤 النوع",desc:"موظف أو مرافق"},
-                {label:"⏳ الحالة",desc:"سارية / تنتهي قريباً (30 يوم) / منتهية"},
-                {label:"🌍 الجنسية",desc:"فلترة حسب الجنسية"},
-                {label:"↕️ الترتيب",desc:"رتّب حسب التاريخ أو الاسم أو الشركة"},
-              ].map(f=>(
-                <div key={f.label} style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
-                  <span style={{fontWeight:700,color:darkMode?"#f0f2f7":"#1e3a5f"}}>{f.label}:</span>
-                  <span style={{color:darkMode?"#a0a8bb":"#6b7280"}}>{f.desc}</span>
-                </div>
-              ))}
-            </div>
+            {showFilterHelp&&(
+              <div style={{background:darkMode?"#1e222b":"#f0f9ff",border:`1px solid ${darkMode?"#2a2f3d":"#bae6fd"}`,borderRadius:"0 0 10px 10px",padding:"10px 16px",marginTop:-14,marginBottom:14,display:"flex",flexWrap:"wrap",gap:"6px 16px"}}>
+                {[
+                  {label:"🔍 البحث",     desc:"اسم أو رقم إقامة أو مهنة"},
+                  {label:"🏢 الشركة",    desc:"فلترة حسب الشركة"},
+                  {label:"👤 النوع",     desc:"موظف أو مرافق"},
+                  {label:"⏳ الحالة",    desc:"سارية / تنتهي قريباً (30 يوم) / منتهية"},
+                  {label:"🌍 الجنسية",  desc:"فلترة حسب الجنسية"},
+                  {label:"↕️ الترتيب",  desc:"حسب التاريخ أو الاسم أو الشركة"},
+                ].map(f=>(
+                  <div key={f.label} style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
+                    <span style={{fontWeight:700,color:darkMode?"#93c5fd":"#2563eb"}}>{f.label}</span>
+                    <span style={{color:darkMode?"#a0a8bb":"#6b7280"}}>— {f.desc}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
 
             {showForm&&(
               <div style={{background:darkMode?"#161920":"#fff",borderRadius:14,padding:22,marginBottom:16,boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.7)":"0 4px 20px rgba(0,0,0,0.12)",border:`2px solid ${darkMode?"#F5A800":"#2563eb"}`}}>
@@ -1448,7 +1455,9 @@ export default function App() {
                         const count=compEmps.filter(e=>matchJob(e.jobTitle||e.notes,j.title)).length;
                         return {...j,count,diff:count-j.required};
                       });
-                      const compliance=Math.round(jobCounts.filter(j=>j.diff>=0).length/jobCounts.length*100);
+                      const totalReq=jobCounts.reduce((s,j)=>s+j.required,0);
+                      const totalFound=jobCounts.reduce((s,j)=>s+Math.min(j.count,j.required),0);
+                      const compliance=totalReq>0?Math.round(totalFound/totalReq*100):0;
                       const statusColor=compliance===100?"#16a34a":compliance>=70?"#d97706":"#dc2626";
                       sections+=`
                         <div style="margin-bottom:28px;page-break-inside:avoid">
@@ -1527,7 +1536,10 @@ export default function App() {
                 const totalFound    = jobCounts.reduce((s,j)=>s+j.count,0);
                 const compliantJobs = jobCounts.filter(j=>j.diff>=0).length;
                 const totalJobs     = jobCounts.length;
-                const compliance    = Math.round(compliantJobs/totalJobs*100);
+                // النسبة بناءً على عدد الموظفين الفعليين vs المطلوبين (أكثر دقة)
+                const totalRequiredCount = jobCounts.reduce((s,j)=>s+j.required,0);
+                const totalFoundCount    = jobCounts.reduce((s,j)=>s+Math.min(j.count,j.required),0);
+                const compliance    = totalRequiredCount>0?Math.round(totalFoundCount/totalRequiredCount*100):0;
 
                 // الموظفون غير المصنفين (مهنتهم لا تطابق أي متطلب)
                 const classifiedIds = new Set();
