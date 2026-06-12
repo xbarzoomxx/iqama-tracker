@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from "firebase/auth";
-import { db, auth, DB_PATH as DB_PATH_CONST } from "./firebase.js";
+import { db, auth, DB_PATH } from "./firebase.js";
 
 const STORAGE_KEY = "iqama_tracker_v3";
 
