@@ -781,11 +781,32 @@ export default function App() {
 
   return (
     <div style={{minHeight:"100vh",background:darkMode?"#0d0f13":"#f0f4f8",fontFamily:"'Segoe UI',Tahoma,sans-serif",direction:"rtl",colorScheme:darkMode?"dark":"light"}}>
+      <style>{`
+        @media (max-width: 768px) {
+          .app-header-inner { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
+          .app-header-actions { width: 100%; justify-content: flex-start !important; flex-wrap: wrap; gap: 6px !important; }
+          .app-header-actions > * { flex: 0 0 auto; }
+          .app-tabs-row { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+          .app-tabs-row::-webkit-scrollbar { height: 4px; }
+          .app-tabs-row button { flex-shrink: 0; white-space: nowrap; font-size: 12px !important; padding: 6px 12px !important; }
+          .app-filter-bar { flex-direction: column; align-items: stretch !important; }
+          .app-filter-bar > * { width: 100% !important; max-width: 100% !important; }
+          .app-modal-box { max-width: 96vw !important; max-height: 92vh !important; }
+          .app-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .app-table-wrap > div { min-width: 600px; }
+          .app-content { padding: 12px 8px !important; }
+          h1 { font-size: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .app-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .app-logo { height: 44px !important; width: 44px !important; }
+        }
+      `}</style>
       {/* Header */}
       <div style={{background:darkMode?"linear-gradient(135deg,#1a0a00 0%,#3d1000 100%)":"linear-gradient(135deg,#6B1A1A 0%,#8B2500 50%,#F5A800 100%)",color:"#fff",padding:"16px 24px",boxShadow:"0 4px 16px rgba(0,0,0,0.25)"}}>
-        <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+        <div className="app-header-inner" style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
           <div style={{display:"flex",alignItems:"center",gap:16}}>
-            <img src={LOGO} alt="شعار أنجال المشاعر" style={{height:58,width:58,objectFit:"contain",borderRadius:8,background:"rgba(255,255,255,0.92)",padding:4}}/>
+            <img src={LOGO} alt="شعار أنجال المشاعر" className="app-logo" style={{height:58,width:58,objectFit:"contain",borderRadius:8,background:"rgba(255,255,255,0.92)",padding:4}}/>
             <div>
               <h1 style={{margin:0,fontSize:20,fontWeight:800,letterSpacing:0.5,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}}>🪪 نظام متابعة الإقامات</h1>
               <div style={{fontSize:11,opacity:.85,marginTop:2,fontWeight:600}}>شركة أنجال المشاعر · سلامة · مصاعد · كاميرات</div>
@@ -797,7 +818,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <div className="app-header-actions" style={{display:"flex",gap:8,alignItems:"center"}}>
             {/* معلومات المستخدم + تسجيل الخروج */}
             <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.1)",borderRadius:10,padding:"6px 12px"}}>
               <div style={{textAlign:"right"}}>
@@ -858,9 +879,9 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"18px 14px",color:darkMode?"#f0f2f7":"inherit"}} onClick={()=>setShowExportMenu(false)}>
+      <div className="app-content" style={{maxWidth:1200,margin:"0 auto",padding:"18px 14px",color:darkMode?"#f0f2f7":"inherit"}} onClick={()=>setShowExportMenu(false)}>
         {/* Stats Cards */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:18}}>
+        <div className="app-stats-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:18}}>
           {[
             {label:"الإجمالي",value:stats.total,color:darkMode?"#f0f2f7":"#1e3a5f",icon:"📋",filter:null},
             {label:"موظفون",value:stats.employees,color:darkMode?"#f0f2f7":"#374151",icon:"👤",filter:"موظف",fKey:"type"},
@@ -884,7 +905,7 @@ export default function App() {
         </div>
 
         {/* Tabs */}
-        <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <div className="app-tabs-row" style={{display:"flex",gap:8,marginBottom:16}}>
           {["list","alerts","family","cost","reports","files","classify"].map(tab=>(
             <button key={tab} onClick={()=>setActiveTab(tab)}
               style={{padding:"7px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",
@@ -965,7 +986,7 @@ export default function App() {
         {/* LIST */}
         {activeTab==="list"&&(
           <>
-            <div style={{background:darkMode?"#161920":"#fff",borderRadius:11,padding:"13px 16px",marginBottom:14,boxShadow:darkMode?"0 2px 7px rgba(0,0,0,0.6)":"0 2px 7px rgba(0,0,0,0.06)",display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+            <div className="app-filter-bar" style={{background:darkMode?"#161920":"#fff",borderRadius:11,padding:"13px 16px",marginBottom:14,boxShadow:darkMode?"0 2px 7px rgba(0,0,0,0.6)":"0 2px 7px rgba(0,0,0,0.06)",display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
               {/* بحث */}
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 بحث بالاسم، الرقم، المهنة..."
                 style={{...inp,flex:"1 1 180px",maxWidth:260}}/>
@@ -1755,7 +1776,8 @@ export default function App() {
                     </div>
 
                     {/* جدول المهن */}
-                    <div style={{borderRadius:12,overflow:"hidden",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,marginBottom:unclassified.length>0?16:0}}>
+                    <div className="app-table-wrap">
+                    <div style={{borderRadius:12,overflow:"hidden",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,marginBottom:unclassified.length>0?16:0,minWidth:560}}>
                       {/* رأس الجدول */}
                       <div style={{background:req.color,padding:"10px 16px",display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1.5fr",gap:8,color:"#fff",fontSize:12,fontWeight:700}}>
                         <span>المهنة المطلوبة</span>
@@ -1811,6 +1833,7 @@ export default function App() {
                           <span style={{fontWeight:700,fontSize:12,color:statusColor}}>{compliance}% التزام</span>
                         </div>
                       </div>
+                    </div>
                     </div>
 
                     {/* الموظفون المصنفون لكل مهنة */}
@@ -1890,7 +1913,7 @@ export default function App() {
             <div onClick={()=>setModalCard(null)}
               style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
               <div onClick={e=>e.stopPropagation()}
-                style={{background:dm?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:820,maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+                className="app-modal-box" style={{background:dm?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:820,maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
                 <div style={{background:"linear-gradient(135deg,#3d1000,#6B1A1A)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <span style={{fontSize:28}}>{modalCard.icon}</span>
@@ -1958,7 +1981,7 @@ export default function App() {
           const inpStyle={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
           return (
           <div onClick={()=>setEditLinkModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
-            <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:460,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+            <div onClick={e=>e.stopPropagation()} className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:460,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
               <div style={{background:"linear-gradient(135deg,#1a73e8,#4285f4)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div style={{color:"#fff",fontWeight:800,fontSize:16}}>✏️ تعديل الرابط</div>
                 <button onClick={()=>setEditLinkModal(null)} style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:32,height:32,fontSize:16,cursor:"pointer",fontWeight:700}}>✕</button>
@@ -2000,7 +2023,7 @@ export default function App() {
           const inpStyle={padding:"9px 12px",border:`1px solid ${darkMode?"#2a2f3d":"#d1d5db"}`,borderRadius:"8px",fontSize:"13px",width:"100%",boxSizing:"border-box",fontFamily:"inherit",direction:"rtl",background:darkMode?"#161920":"#fff",color:darkMode?"#f0f2f7":"#1f2937",outline:"none"};
           return (
           <div onClick={()=>setEditCrModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1300,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
-            <div onClick={e=>e.stopPropagation()} style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+            <div onClick={e=>e.stopPropagation()} className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
               <div style={{background:"linear-gradient(135deg,#6B1A1A,#F5A800)",padding:"16px 22px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
                 <div style={{color:"#fff"}}>
                   <div style={{fontWeight:800,fontSize:16}}>✏️ تعديل السجل التجاري</div>
@@ -2051,7 +2074,7 @@ export default function App() {
           <div onClick={()=>setDriveModal(null)}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()}
-              style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+              className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:520,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
 
               {/* هيدر */}
               <div style={{background:"linear-gradient(135deg,#1a73e8,#4285f4)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
@@ -2386,7 +2409,7 @@ export default function App() {
           <div onClick={()=>setImportModal(false)}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()}
-              style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:440,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+              className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:440,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
 
               <div style={{background:"linear-gradient(135deg,#1e40af,#3b82f6)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div style={{color:"#fff"}}>
@@ -2447,7 +2470,7 @@ export default function App() {
           <div onClick={()=>setNotifModal(false)}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()}
-              style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:420,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+              className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:420,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
 
               <div style={{background:"linear-gradient(135deg,#92400e,#d97706)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div style={{color:"#fff"}}>
@@ -2516,7 +2539,7 @@ export default function App() {
           <div onClick={()=>setRenewModal(null)}
             style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1100,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(3px)"}}>
             <div onClick={e=>e.stopPropagation()}
-              style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:440,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
+              className="app-modal-box" style={{background:darkMode?"#161920":"#fff",borderRadius:16,width:"100%",maxWidth:440,boxShadow:"0 24px 64px rgba(0,0,0,0.4)",overflow:"hidden"}}>
 
               {/* هيدر */}
               <div style={{background:"linear-gradient(135deg,#14532d,#16a34a)",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
