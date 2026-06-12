@@ -125,6 +125,32 @@ const COMPANY_COLORS = {
   "البيوت الذكية": { bg:"#f0f9ff", text:"#0369a1", border:"#bae6fd" },
 };
 
+// ── متغيرات الوضع الليلي (ألوان فاتحة على خلفية داكنة) ──
+const STATUS_COLORS_DARK = {
+  منتهية:        { bg:"#3a1414", text:"#fca5a5", border:"#7f1d1d" },
+  "تنتهي قريباً":{ bg:"#3a2a0a", text:"#fde68a", border:"#92400e" },
+  سارية:         { bg:"#0f2e1a", text:"#86efac", border:"#166534" },
+  "قيد التجديد": { bg:"#102a43", text:"#93c5fd", border:"#1e40af" },
+  مرافق:         { bg:"#2a1a3a", text:"#d8b4fe", border:"#5b21b6" },
+};
+
+const COMPANY_COLORS_DARK = {
+  "انجال المشاعر": { bg:"#3a1414", text:"#f3a8a8", border:"#7f1d1d" },
+  "دلتا الماسية":  { bg:"#3a2a0a", text:"#fde68a", border:"#92400e" },
+  "البيوت الذكية": { bg:"#0c2a3a", text:"#7dd3fc", border:"#0e7490" },
+};
+
+// إرجاع ألوان الحالة بحسب الوضع (فاتحة في الليلي، داكنة في النهاري)
+const getStatusColor = (status, dm) => (dm ? STATUS_COLORS_DARK[status] : STATUS_COLORS[status]) || STATUS_COLORS[status];
+
+// إرجاع ألوان الشركة بحسب الوضع
+const getCompanyColor = (company, dm) => {
+  const map = dm ? COMPANY_COLORS_DARK : COMPANY_COLORS;
+  return map[company] || (dm
+    ? { bg:"#1e222b", text:"#d1d5db", border:"#374151" }
+    : { bg:"#f9fafb", text:"#374151", border:"#e5e7eb" });
+};
+
 const RELATION_ICONS = { زوجة:"💑", ابن:"👦", بنت:"👧" };
 
 function getStatus(r) {
@@ -783,6 +809,7 @@ export default function App() {
     <div style={{minHeight:"100vh",background:darkMode?"#0d0f13":"#f0f4f8",fontFamily:"'Segoe UI',Tahoma,sans-serif",direction:"rtl",colorScheme:darkMode?"dark":"light"}}>
       <style>{`
         @media (max-width: 768px) {
+          .app-hide-mobile { display: none !important; }
           .app-header-inner { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
           .app-header-actions { width: 100%; justify-content: flex-start !important; flex-wrap: wrap; gap: 6px !important; }
           .app-header-actions > * { flex: 0 0 auto; }
@@ -802,118 +829,164 @@ export default function App() {
           .app-logo { height: 44px !important; width: 44px !important; }
         }
       `}</style>
-      {/* Header */}
-      <div style={{background:darkMode?"linear-gradient(135deg,#1a0a00 0%,#3d1000 100%)":"linear-gradient(135deg,#6B1A1A 0%,#8B2500 50%,#F5A800 100%)",color:"#fff",padding:"16px 24px",boxShadow:"0 4px 16px rgba(0,0,0,0.25)"}}>
-        <div className="app-header-inner" style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:16}}>
-            <img src={LOGO} alt="شعار أنجال المشاعر" className="app-logo" style={{height:58,width:58,objectFit:"contain",borderRadius:8,background:"rgba(255,255,255,0.92)",padding:4}}/>
+      {/* ══════ Header (modern) ══════ */}
+      <div style={{
+          background: darkMode
+            ? "linear-gradient(135deg,#1a0a00 0%,#2a0e00 45%,#3d1000 100%)"
+            : "linear-gradient(135deg,#6B1A1A 0%,#8B2500 55%,#c2670f 100%)",
+          color:"#fff", padding:"14px 20px 0", position:"sticky", top:0, zIndex:50,
+          boxShadow:"0 4px 20px rgba(0,0,0,0.25)",
+        }}>
+        <div className="app-header-inner" style={{maxWidth:1280,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,paddingBottom:12}}>
+          {/* الشعار والعنوان */}
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <img src={LOGO} alt="شعار أنجال المشاعر" className="app-logo"
+              style={{height:50,width:50,objectFit:"contain",borderRadius:12,background:"rgba(255,255,255,0.95)",padding:5,boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}/>
             <div>
-              <h1 style={{margin:0,fontSize:20,fontWeight:800,letterSpacing:0.5,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}}>🪪 نظام متابعة الإقامات</h1>
-              <div style={{fontSize:11,opacity:.85,marginTop:2,fontWeight:600}}>شركة أنجال المشاعر · سلامة · مصاعد · كاميرات</div>
-              <div style={{display:"flex",gap:12,marginTop:4,fontSize:11,opacity:.9,flexWrap:"wrap"}}>
-                <span>👤 {stats.employees} موظف</span>
-                <span>👨‍👩‍👧 {stats.dependents} مرافق</span>
-                <span style={{background:"rgba(255,255,255,0.15)",padding:"1px 8px",borderRadius:8}}>🏢 انجال: {stats.anjal}</span>
-                <span style={{background:"rgba(255,255,255,0.15)",padding:"1px 8px",borderRadius:8}}>🏢 دلتا: {stats.delta}</span>
-              </div>
+              <h1 style={{margin:0,fontSize:19,fontWeight:800,letterSpacing:0.3,display:"flex",alignItems:"center",gap:6}}>
+                🪪 نظام متابعة الإقامات
+              </h1>
+              <div style={{fontSize:11,opacity:.8,marginTop:2,fontWeight:600}}>شركة أنجال المشاعر · سلامة · مصاعد · كاميرات</div>
             </div>
           </div>
-          <div className="app-header-actions" style={{display:"flex",gap:8,alignItems:"center"}}>
-            {/* معلومات المستخدم + تسجيل الخروج */}
-            <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.1)",borderRadius:10,padding:"6px 12px"}}>
+
+          {/* الإجراءات */}
+          <div className="app-header-actions" style={{display:"flex",gap:7,alignItems:"center"}}>
+            {/* معلومات المستخدم */}
+            <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:12,padding:"6px 12px",backdropFilter:"blur(6px)"}}>
+              <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800}}>
+                {(user?.displayName||user?.email||"؟")[0].toUpperCase()}
+              </div>
               <div style={{textAlign:"right"}}>
-                <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{user?.displayName||user?.email?.split("@")[0]}</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>{user?.email}</div>
+                <div style={{fontSize:12,fontWeight:700,color:"#fff",lineHeight:1.3}}>{user?.displayName||user?.email?.split("@")[0]}</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.6)",lineHeight:1.3}}>{user?.email}</div>
               </div>
               <button onClick={()=>signOut(auth)} title="تسجيل الخروج"
-                style={{background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.4)",color:"#fff",borderRadius:8,width:32,height:32,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:9,width:30,height:30,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"background 0.15s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.2)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}>
                 🚪
               </button>
             </div>
 
-            {/* زر الاستيراد من Excel */}
-            <label title="استيراد بيانات من ملف Excel (مقيم)"
-              style={{background:"rgba(255,255,255,0.15)",color:"#fff",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:9,padding:"8px 14px",fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
-              📥 استيراد
-              <input type="file" accept=".xlsx,.xls" style={{display:"none"}}
-                onChange={e=>{if(e.target.files[0]){handleImportExcel(e.target.files[0]);setImportModal(true);e.target.value="";}}}/>
-            </label>
+            {/* مجموعة أزرار الإجراءات */}
+            <div style={{display:"flex",gap:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:12,padding:5,backdropFilter:"blur(6px)"}}>
+              {/* استيراد Excel */}
+              <label title="استيراد بيانات من ملف Excel (مقيم)"
+                style={{background:"rgba(255,255,255,0.1)",color:"#fff",border:"none",borderRadius:8,padding:"7px 12px",fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:5,transition:"background 0.15s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}>
+                📥<span className="app-hide-mobile">استيراد</span>
+                <input type="file" accept=".xlsx,.xls" style={{display:"none"}}
+                  onChange={e=>{if(e.target.files[0]){handleImportExcel(e.target.files[0]);setImportModal(true);e.target.value="";}}}/>
+              </label>
 
-            {/* زر الإشعارات */}
-            <button onClick={()=>setNotifModal(true)} title="تفعيل إشعارات انتهاء الإقامة"
-              style={{background:"rgba(255,255,255,0.15)",color:"#fff",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:9,padding:"8px 14px",fontWeight:600,fontSize:13,cursor:"pointer"}}>
-              🔔
-            </button>
-
-            <button onClick={()=>setDarkMode(!darkMode)}
-              title={darkMode?"وضع النهار":"الوضع المظلم"}
-              style={{background:darkMode?"#F5A800":"rgba(255,255,255,0.15)",color:darkMode?"#1a0a00":"#fff",border:`1.5px solid ${darkMode?"#F5A800":"rgba(255,255,255,0.4)"}`,borderRadius:9,padding:"8px 14px",fontWeight:700,fontSize:16,cursor:"pointer",transition:"all 0.3s"}}>
-              {darkMode?"☀️":"🌙"}
-            </button>
-            <div style={{position:"relative"}}>
-              <button onClick={(e)=>{e.stopPropagation();setShowExportMenu(!showExportMenu);}} disabled={records.length===0}
-                style={{background:"rgba(255,255,255,0.15)",color:"#fff",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:9,padding:"8px 14px",fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
-                📤 تصدير ▾
+              {/* إشعارات */}
+              <button onClick={()=>setNotifModal(true)} title="تفعيل إشعارات انتهاء الإقامة"
+                style={{background:"rgba(255,255,255,0.1)",color:"#fff",border:"none",borderRadius:8,padding:"7px 12px",fontWeight:600,fontSize:14,cursor:"pointer",transition:"background 0.15s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}>
+                🔔
               </button>
-              {showExportMenu&&(
-                <div style={{position:"absolute",top:"110%",left:0,background:darkMode?"#161920":"#fff",borderRadius:10,boxShadow:darkMode?"0 8px 32px rgba(0,0,0,0.8)":"0 8px 24px rgba(0,0,0,0.15)",overflow:"hidden",minWidth:185,zIndex:100}}>
-                  <button onClick={()=>{exportToExcel(records);setShowExportMenu(false);}}
-                    style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"11px 15px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"right"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                    <span style={{fontSize:17}}>📊</span><div><div style={{fontWeight:700,color:"#16a34a"}}>تصدير Excel</div><div style={{fontSize:11,color:"#6b7280"}}>3 أوراق: موظفون، مرافقون، ملخص</div></div>
-                  </button>
-                  <div style={{height:1,background:darkMode?"#2a2f3d":"#f3f4f6"}}/>
-                  <button onClick={()=>{exportToPDF(records);setShowExportMenu(false);}}
-                    style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"11px 15px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"right"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                    <span style={{fontSize:17}}>📄</span><div><div style={{fontWeight:700,color:"#dc2626"}}>تصدير PDF</div><div style={{fontSize:11,color:"#6b7280"}}>تقرير شامل للطباعة</div></div>
-                  </button>
-                </div>
-              )}
+
+              {/* الوضع الليلي */}
+              <button onClick={()=>setDarkMode(!darkMode)} title={darkMode?"وضع النهار":"الوضع المظلم"}
+                style={{background:darkMode?"#F5A800":"rgba(255,255,255,0.1)",color:darkMode?"#1a0a00":"#fff",border:"none",borderRadius:8,padding:"7px 12px",fontWeight:700,fontSize:14,cursor:"pointer",transition:"all 0.2s"}}>
+                {darkMode?"☀️":"🌙"}
+              </button>
+
+              {/* تصدير */}
+              <div style={{position:"relative"}}>
+                <button onClick={(e)=>{e.stopPropagation();setShowExportMenu(!showExportMenu);}} disabled={records.length===0}
+                  style={{background:"rgba(255,255,255,0.1)",color:"#fff",border:"none",borderRadius:8,padding:"7px 12px",fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:5,transition:"background 0.15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}>
+                  📤<span className="app-hide-mobile">تصدير</span> ▾
+                </button>
+                {showExportMenu&&(
+                  <div style={{position:"absolute",top:"110%",left:0,background:darkMode?"#161920":"#fff",borderRadius:10,boxShadow:darkMode?"0 8px 32px rgba(0,0,0,0.8)":"0 8px 24px rgba(0,0,0,0.15)",overflow:"hidden",minWidth:185,zIndex:100}}>
+                    <button onClick={()=>{exportToExcel(records);setShowExportMenu(false);}}
+                      style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"11px 15px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"right"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=darkMode?"#0f1f17":"#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                      <span style={{fontSize:17}}>📊</span><div><div style={{fontWeight:700,color:darkMode?"#6ee7b7":"#16a34a"}}>تصدير Excel</div><div style={{fontSize:11,color:darkMode?"#a0a8bb":"#6b7280"}}>3 أوراق: موظفون، مرافقون، ملخص</div></div>
+                    </button>
+                    <div style={{height:1,background:darkMode?"#2a2f3d":"#f3f4f6"}}/>
+                    <button onClick={()=>{exportToPDF(records);setShowExportMenu(false);}}
+                      style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"11px 15px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"right"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=darkMode?"#2a1515":"#fef2f2"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                      <span style={{fontSize:17}}>📄</span><div><div style={{fontWeight:700,color:darkMode?"#fca5a5":"#dc2626"}}>تصدير PDF</div><div style={{fontSize:11,color:darkMode?"#a0a8bb":"#6b7280"}}>تقرير شامل للطباعة</div></div>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* إضافة */}
+              <button onClick={()=>{setForm(emptyForm);setEditId(null);setShowForm(true);setActiveTab("list");setShowExportMenu(false);}}
+                style={{background:darkMode?"#F5A800":"#fff",color:darkMode?"#1a0a00":"#6B1A1A",border:"none",borderRadius:8,padding:"7px 14px",fontWeight:800,fontSize:14,cursor:"pointer"}}>
+                ＋ إضافة
+              </button>
             </div>
-            <button onClick={()=>{setForm(emptyForm);setEditId(null);setShowForm(true);setActiveTab("list");setShowExportMenu(false);}}
-              style={{background:darkMode?"#F5A800":"#fff",color:darkMode?"#1a0a00":"#6B1A1A",border:"none",borderRadius:9,padding:"8px 16px",fontWeight:700,fontSize:14,cursor:"pointer"}}>
-              ＋ إضافة
-            </button>
           </div>
+        </div>
+
+        {/* شريط الإحصائيات السريعة */}
+        <div style={{maxWidth:1280,margin:"0 auto",display:"flex",gap:8,flexWrap:"wrap",paddingBottom:12,fontSize:12}}>
+          {[
+            {l:"👤 موظفون",v:stats.employees},
+            {l:"👨‍👩‍👧 مرافقون",v:stats.dependents},
+            {l:"🏢 انجال",v:stats.anjal},
+            {l:"🏢 دلتا",v:stats.delta},
+          ].map(p=>(
+            <div key={p.l} style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,fontWeight:600}}>
+              <span style={{opacity:.85}}>{p.l}</span>
+              <span style={{fontWeight:800}}>{p.v}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="app-content" style={{maxWidth:1200,margin:"0 auto",padding:"18px 14px",color:darkMode?"#f0f2f7":"inherit"}} onClick={()=>setShowExportMenu(false)}>
-        {/* Stats Cards */}
-        <div className="app-stats-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:18}}>
+      <div className="app-content" style={{maxWidth:1280,margin:"0 auto",padding:"18px 14px",color:darkMode?"#f0f2f7":"inherit"}} onClick={()=>setShowExportMenu(false)}>
+        {/* ══════ Stats Cards (modern) ══════ */}
+        <div className="app-stats-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(125px,1fr))",gap:10,marginBottom:18}}>
           {[
-            {label:"الإجمالي",value:stats.total,color:darkMode?"#f0f2f7":"#1e3a5f",icon:"📋",filter:null},
-            {label:"موظفون",value:stats.employees,color:darkMode?"#f0f2f7":"#374151",icon:"👤",filter:"موظف",fKey:"type"},
-            {label:"مرافقون",value:stats.dependents,color:"#7c3aed",icon:"👨‍👩‍👧",filter:"مرافق",fKey:"type"},
-            {label:"سارية",value:stats.valid,color:"#16a34a",icon:"✅",filter:"سارية",fKey:"status"},
-            {label:"تنتهي قريباً",value:stats.soon,color:"#d97706",icon:"⚠️",filter:"تنتهي قريباً",fKey:"status"},
-            {label:"منتهية",value:stats.expired,color:"#dc2626",icon:"❌",filter:"منتهية",fKey:"status"},
-            {label:"انجال المشاعر",value:stats.anjal,color:"#6B1A1A",icon:"🏢",filter:"انجال المشاعر",fKey:"company"},
-            {label:"دلتا الماسية",value:stats.delta,color:"#b45309",icon:"🏢",filter:"دلتا الماسية",fKey:"company"},
-          ].map(s=>(
+            {label:"الإجمالي",value:stats.total,light:"#1e3a5f",dark:"#cbd5e1",icon:"📋",filter:null},
+            {label:"موظفون",value:stats.employees,light:"#374151",dark:"#e5e7eb",icon:"👤",filter:"موظف",fKey:"type"},
+            {label:"مرافقون",value:stats.dependents,light:"#7c3aed",dark:"#d8b4fe",icon:"👨‍👩‍👧",filter:"مرافق",fKey:"type"},
+            {label:"سارية",value:stats.valid,light:"#16a34a",dark:"#86efac",icon:"✅",filter:"سارية",fKey:"status"},
+            {label:"تنتهي قريباً",value:stats.soon,light:"#d97706",dark:"#fde68a",icon:"⚠️",filter:"تنتهي قريباً",fKey:"status"},
+            {label:"منتهية",value:stats.expired,light:"#dc2626",dark:"#fca5a5",icon:"❌",filter:"منتهية",fKey:"status"},
+            {label:"انجال المشاعر",value:stats.anjal,light:"#6B1A1A",dark:"#f3a8a8",icon:"🏢",filter:"انجال المشاعر",fKey:"company"},
+            {label:"دلتا الماسية",value:stats.delta,light:"#b45309",dark:"#fde68a",icon:"🏢",filter:"دلتا الماسية",fKey:"company"},
+          ].map(s=>{
+            const c = darkMode?s.dark:s.light;
+            return (
             <div key={s.label}
               onClick={()=>{ if(s.value>0) setModalCard(s); }}
-              style={{background:darkMode?"#161920":"#fff",borderRadius:10,padding:"12px 10px",boxShadow:darkMode?"0 2px 6px rgba(0,0,0,0.6)":"0 2px 6px rgba(0,0,0,0.07)",borderTop:`3px solid ${s.color}`,textAlign:"center",cursor:s.value>0?"pointer":"default",transition:"all 0.15s",transform:"scale(1)",userSelect:"none"}}
-              onMouseEnter={e=>{if(s.value>0)e.currentTarget.style.transform="scale(1.04) translateY(-2px)";}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";}}>
-              <div style={{fontSize:20}}>{s.icon}</div>
-              <div style={{fontSize:24,fontWeight:800,color:s.color}}>{s.value}</div>
-              <div style={{fontSize:11,color:darkMode?"#a0a8bb":"#6b7280",marginTop:1}}>{s.label}</div>
+              style={{background:darkMode?"#161920":"#fff",borderRadius:14,padding:"14px 12px",boxShadow:darkMode?"0 2px 8px rgba(0,0,0,0.5)":"0 2px 8px rgba(0,0,0,0.06)",border:`1px solid ${darkMode?"#23272f":"#f1f3f6"}`,borderTop:`3px solid ${c}`,textAlign:"center",cursor:s.value>0?"pointer":"default",transition:"transform 0.15s, box-shadow 0.15s",userSelect:"none"}}
+              onMouseEnter={e=>{if(s.value>0){e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow=darkMode?"0 8px 20px rgba(0,0,0,0.6)":"0 8px 20px rgba(0,0,0,0.1)";}}}
+              onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow=darkMode?"0 2px 8px rgba(0,0,0,0.5)":"0 2px 8px rgba(0,0,0,0.06)";}}>
+              <div style={{fontSize:19}}>{s.icon}</div>
+              <div style={{fontSize:25,fontWeight:800,color:c,marginTop:2}}>{s.value}</div>
+              <div style={{fontSize:11,color:darkMode?"#a0a8bb":"#6b7280",marginTop:2,fontWeight:600}}>{s.label}</div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Tabs */}
-        <div className="app-tabs-row" style={{display:"flex",gap:8,marginBottom:16}}>
-          {["list","alerts","family","cost","reports","files","classify"].map(tab=>(
+        {/* ══════ Tabs (modern segmented) ══════ */}
+        <div className="app-tabs-row" style={{display:"flex",gap:6,marginBottom:18,background:darkMode?"#161920":"#fff",borderRadius:14,padding:6,boxShadow:darkMode?"0 2px 8px rgba(0,0,0,0.5)":"0 2px 8px rgba(0,0,0,0.06)",border:`1px solid ${darkMode?"#23272f":"#f1f3f6"}`}}>
+          {["list","alerts","family","cost","reports","files","classify"].map(tab=>{
+            const active = activeTab===tab;
+            return (
             <button key={tab} onClick={()=>setActiveTab(tab)}
-              style={{padding:"7px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",
-                background:activeTab===tab?"#8B2500":darkMode?"#161920":"#fff",color:activeTab===tab?"#fff":darkMode?"#f0f2f7":"#374151",border:darkMode&&activeTab!==tab?"1px solid #2a2f3d":"none",boxShadow:darkMode?"0 2px 8px rgba(0,0,0,0.6)":"0 2px 6px rgba(0,0,0,0.07)"}}>
+              style={{padding:"8px 16px",borderRadius:10,border:"none",cursor:"pointer",fontWeight:700,fontSize:13,fontFamily:"inherit",transition:"all 0.15s",
+                background:active?"linear-gradient(135deg,#6B1A1A,#8B2500)":"transparent",
+                color:active?"#fff":(darkMode?"#a0a8bb":"#6b7280"),
+                boxShadow:active?"0 2px 10px rgba(139,37,0,0.35)":"none"}}>
               {tab==="list"?"📋 الكل":tab==="alerts"?`🔔 تنبيهات ${stats.expired+stats.soon>0?`(${stats.expired+stats.soon})`:""}`:tab==="family"?`👨‍👩‍👧 عائلات (${stats.dependents})`:tab==="cost"?"💰 حاسبة التكلفة":tab==="reports"?"📊 التقارير":tab==="files"?"📁 الملفات":"⚖️ التنصيف"}
             </button>
-          ))}
+            );
+          })}
         </div>
+
+        {/* ALERTS */}
+        {activeTab==="alerts"&&(
 
         {/* ALERTS */}
         {activeTab==="alerts"&&(
@@ -922,8 +995,8 @@ export default function App() {
             {records.filter(r=>r.expiryDate&&getDaysLeft(r.expiryDate)<=30).length===0?(
               <div style={{textAlign:"center",color:"#6b7280",padding:30}}><div style={{fontSize:44}}>✅</div><p>لا توجد تنبيهات.</p></div>
             ):records.filter(r=>r.expiryDate&&getDaysLeft(r.expiryDate)<=30).sort((a,b)=>getDaysLeft(a.expiryDate)-getDaysLeft(b.expiryDate)).map(r=>{
-              const st=getStatus(r),sc=STATUS_COLORS[st],days=getDaysLeft(r.expiryDate);
-              const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151"};
+              const st=getStatus(r),sc=getStatusColor(st,darkMode),days=getDaysLeft(r.expiryDate);
+              const cc=getCompanyColor(r.company,darkMode);
               return (
                 <div key={r.id} style={{background:sc.bg,border:`1px solid ${sc.border}`,borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
                   <div>
@@ -944,8 +1017,8 @@ export default function App() {
           <div>
             {records.filter(r=>r.type!=="مرافق"&&records.some(d=>d.familyHeadId===r.iqamaNumber)).map(head=>{
               const deps=records.filter(d=>d.familyHeadId===head.iqamaNumber);
-              const hSt=getStatus(head),hSc=STATUS_COLORS[hSt];
-              const cc=COMPANY_COLORS[head.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+              const hSt=getStatus(head),hSc=getStatusColor(hSt,darkMode);
+              const cc=getCompanyColor(head.company,darkMode);
               return (
                 <div key={head.id} style={{background:darkMode?"#161920":"#fff",borderRadius:14,padding:"18px 20px",marginBottom:14,boxShadow:darkMode?"0 2px 10px rgba(0,0,0,0.6)":"0 2px 10px rgba(0,0,0,0.07)",borderRight:`5px solid ${hSc.border}`}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8,marginBottom:12}}>
@@ -1111,8 +1184,8 @@ export default function App() {
             ):(
               <div style={{display:"grid",gap:10}}>
                 {filtered.filter(r=>r.type!=="مرافق").map(r=>{
-                  const st=getStatus(r),sc=STATUS_COLORS[st],days=r.expiryDate?getDaysLeft(r.expiryDate):null;
-                  const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                  const st=getStatus(r),sc=getStatusColor(st,darkMode),days=r.expiryDate?getDaysLeft(r.expiryDate):null;
+                  const cc=getCompanyColor(r.company,darkMode);
                   const expanded=expandedId===r.id;
                   // المرافقون المرتبطون برب الأسرة هذا
                   const dependents=records.filter(d=>d.familyHeadId===r.iqamaNumber);
@@ -1197,7 +1270,7 @@ export default function App() {
                           </div>
                           <div style={{display:"grid",gap:8}}>
                             {dependents.map(d=>{
-                              const dcc=COMPANY_COLORS[d.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                              const dcc=getCompanyColor(d.company,darkMode);
                               return (
                                 <div key={d.id} style={{background:darkMode?"#161920":"#fff",borderRadius:10,padding:"12px 16px",border:`1px solid ${darkMode?"#3b1f6e":"#e9d5ff"}`,display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:8}}>
                                   <div style={{flex:"1 1 180px"}}>
@@ -1479,8 +1552,8 @@ export default function App() {
                     const empSelected = isEmpSelected(emp);
                     const deps = companyFiltered.filter(d=>d.familyHeadId===emp.iqamaNumber);
                     const depsIncluded = calcIncludeDeps[emp.id] !== false;
-                    const st=getStatus(emp), sc=STATUS_COLORS[st];
-                    const rcc=COMPANY_COLORS[emp.company]||{bg:"#f9f9f9",text:"#374151"};
+                    const st=getStatus(emp), sc=getStatusColor(st,darkMode);
+                    const rcc=getCompanyColor(emp.company,darkMode);
                     return (
                       <div key={emp.id} style={{borderRadius:10,border:`2px solid ${empSelected?"#F5A800":darkMode?"#2a2f3d":"#e5e7eb"}`,background:empSelected?(darkMode?"#1a1000":"#f0f9ff"):(darkMode?"#161920":"#fafafa"),overflow:"hidden",position:"relative"}}>
                         {/* شريط الأولوية */}
@@ -1570,8 +1643,8 @@ export default function App() {
                   <span style={{textAlign:"center"}}>الإجمالي</span>
                 </div>
                 {breakdown.sort((a,b)=>priorityOrder(a.r)-priorityOrder(b.r)||getDaysLeft(a.r.expiryDate)-getDaysLeft(b.r.expiryDate)).map(({r,isEmployee,isExpired,isWithinQuarter,expiredDays,useLateRate,totalBacklog,totalCurrent,totalRenew,total,expiredQuarterDisplay},i)=>{
-                  const st=getStatus(r),sc=STATUS_COLORS[st];
-                  const rcc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151"};
+                  const st=getStatus(r),sc=getStatusColor(st,darkMode);
+                  const rcc=getCompanyColor(r.company,darkMode);
                   return (
                     <div key={r.id} style={{padding:"9px 16px",borderBottom:`1px solid ${darkMode?"#2a2f3d":"#f3f4f6"}`,background:i%2===0?(darkMode?'#161920':'#fff'):(darkMode?'#111419':'#fafafa'),display:"grid",gridTemplateColumns:"2fr 0.7fr 0.8fr 0.9fr 0.9fr 0.9fr 1fr",gap:6,alignItems:"center"}}>
                       <div>
@@ -1711,7 +1784,7 @@ export default function App() {
               {/* ── بطاقة لكل شركة ── */}
               {Object.entries(CLASSIFICATION_REQUIREMENTS).map(([compName, req])=>{
                 const compEmps = records.filter(r=>r.company===compName && r.type!=="مرافق");
-                const cc = COMPANY_COLORS[compName]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                const cc = getCompanyColor(compName,dm);
 
                 // حساب الموجود من كل مهنة
                 const jobCounts = req.jobs.map(j=>{
@@ -1855,7 +1928,7 @@ export default function App() {
                                 <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
                                   {emps.map(e=>{
                                     const st=getStatus(e);
-                                    const sc=STATUS_COLORS[st];
+                                    const sc=getStatusColor(st,dm);
                                     return (
                                       <span key={e.id} style={{background:sc.bg,color:sc.text,border:`1px solid ${sc.border}`,padding:"1px 8px",borderRadius:10,fontSize:10,fontWeight:600}}>
                                         {e.name}
@@ -1931,9 +2004,9 @@ export default function App() {
                       <div style={{fontSize:44}}>📭</div><p style={{marginTop:8}}>لا توجد سجلات</p>
                     </div>
                   ) : modalRecords.map(r => {
-                    const st=getStatus(r), sc=STATUS_COLORS[st];
+                    const st=getStatus(r), sc=getStatusColor(st,dm);
                     const days=r.expiryDate?getDaysLeft(r.expiryDate):null;
-                    const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                    const cc=getCompanyColor(r.company,dm);
                     const headRecord=r.type==="مرافق"?records.find(e=>e.iqamaNumber===r.familyHeadId):null;
                     return (
                       <div key={r.id} style={{background:dm?"#252830":"#f9fafb",borderRadius:12,padding:"14px 16px",marginBottom:10,borderRight:`4px solid ${sc.border}`,display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
@@ -2251,7 +2324,7 @@ export default function App() {
               {/* ── ملفات الشركتين ── */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:16,marginBottom:0}}>
                 {Object.entries(COMPANY_IDS).map(([compName, compId])=>{
-                  const cc=COMPANY_COLORS[compName]||{bg:"#f9fafb",text:"#374151",border:"#e5e7eb"};
+                  const cc=getCompanyColor(compName,dm);
                   const links=getDriveLinks(compId);
                   return (
                     <div key={compId} style={card}>
@@ -2358,7 +2431,7 @@ export default function App() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
                   {records.filter(r=>getDriveLinks(r.id).length>0).map(r=>{
                     const links=getDriveLinks(r.id);
-                    const cc=COMPANY_COLORS[r.company]||{bg:"#f9fafb",text:"#374151",border:"#e5e7eb"};
+                    const cc=getCompanyColor(r.company,dm);
                     return (
                       <div key={r.id} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:12,border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,padding:"14px",display:"flex",flexDirection:"column",gap:10}}>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
@@ -3179,7 +3252,7 @@ export default function App() {
                             </div>
                             <div style={{padding:"8px 14px 10px",borderTop:`1px dashed ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",flexWrap:"wrap",gap:6}}>
                               {emps.map(r=>{
-                                const sc=STATUS_COLORS[getStatus(r)];
+                                const sc=getStatusColor(getStatus(r),dm);
                                 return <span key={r.id} style={{background:sc.bg,color:sc.text,border:`1px solid ${sc.border}`,padding:"2px 9px",borderRadius:12,fontSize:11,fontWeight:600}}>{r.name}</span>;
                               })}
                             </div>
@@ -3224,8 +3297,8 @@ export default function App() {
                         </div>
                         <div style={{display:"grid",gap:8}}>
                           {outside.map(r=>{
-                            const st=getStatus(r),sc=STATUS_COLORS[st];
-                            const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                            const st=getStatus(r),sc=getStatusColor(st,dm);
+                            const cc=getCompanyColor(r.company,dm);
                             return (
                               <div key={r.id} style={{background:dm?"#1e222b":"#fafafa",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,borderRight:`4px solid ${sc.border}`,borderRadius:10,padding:"10px 14px",display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",justifyContent:"space-between"}}>
                                 <div>
@@ -3325,7 +3398,7 @@ export default function App() {
                     </div>
                     <div style={{display:"grid",gap:8,maxHeight:280,overflowY:"auto"}}>
                       {renewedRecords.sort((a,b)=>new Date(b.lastRenewalDate)-new Date(a.lastRenewalDate)).map(r=>{
-                        const cc=COMPANY_COLORS[r.company]||{bg:"#f9f9f9",text:"#374151",border:"#e5e7eb"};
+                        const cc=getCompanyColor(r.company,darkMode);
                         return (
                           <div key={r.id} style={{background:dm?"#1e222b":"#f9fafb",borderRadius:10,padding:"11px 14px",border:`1px solid ${dm?"#2a2f3d":"#e5e7eb"}`,display:"flex",flexWrap:"wrap",gap:10,alignItems:"center",justifyContent:"space-between"}}>
                             <div>
