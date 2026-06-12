@@ -482,15 +482,74 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  useEffect(() => {
-    try { const s=localStorage.getItem(STORAGE_KEY); if(s){setRecords(JSON.parse(s));return;} } catch{}
-    setRecords(INITIAL_DATA);
-  }, []);
+  // ── تحميل البيانات من Firebase (تتزامن بين جميع الأجهزة) ──
+  const [recordsLoaded, setRecordsLoaded]   = useState(false);
+  const [driveLoaded, setDriveLoaded]       = useState(false);
+  const [crLoaded, setCrLoaded]             = useState(false);
+  const isFirstSync = useRef({records:true, drive:true, cr:true});
 
-  useEffect(() => { if(records.length>0) localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }, [records]);
-  useEffect(() => { localStorage.setItem("drive_links", JSON.stringify(driveLinks)); }, [driveLinks]);
-  useEffect(() => { localStorage.setItem("custom_cr", JSON.stringify(customCr)); }, [customCr]);
-  useEffect(() => { localStorage.setItem("custom_cr", JSON.stringify(customCr)); }, [customCr]);
+  useEffect(() => {
+    if (!user) return;
+    const recRef = ref(db, DB_PATH);
+    const unsub = onValue(recRef, (snap) => {
+      const data = snap.val();
+      if (data && Array.isArray(data) && data.length > 0) {
+        setRecords(data);
+      } else if (data === null) {
+        // أول استخدام - رفع البيانات الافتراضية
+        try {
+          const local = localStorage.getItem(STORAGE_KEY);
+          setRecords(local ? JSON.parse(local) : INITIAL_DATA);
+        } catch { setRecords(INITIAL_DATA); }
+      }
+      isFirstSync.current.records = false;
+      setRecordsLoaded(true);
+    });
+    return () => unsub();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const dlRef = ref(db, "drive_links");
+    const unsub = onValue(dlRef, (snap) => {
+      const data = snap.val();
+      if (data) setDriveLinks(data);
+      isFirstSync.current.drive = false;
+      setDriveLoaded(true);
+    });
+    return () => unsub();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const crRef = ref(db, "custom_cr");
+    const unsub = onValue(crRef, (snap) => {
+      const data = snap.val();
+      if (data) setCustomCr(data);
+      isFirstSync.current.cr = false;
+      setCrLoaded(true);
+    });
+    return () => unsub();
+  }, [user]);
+
+  // ── حفظ التغييرات في Firebase + احتياطي محلي ──
+  useEffect(() => {
+    if (!recordsLoaded || records.length === 0) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    set(ref(db, DB_PATH), records).catch(()=>{});
+  }, [records, recordsLoaded]);
+
+  useEffect(() => {
+    if (!driveLoaded) return;
+    localStorage.setItem("drive_links", JSON.stringify(driveLinks));
+    set(ref(db, "drive_links"), driveLinks).catch(()=>{});
+  }, [driveLinks, driveLoaded]);
+
+  useEffect(() => {
+    if (!crLoaded) return;
+    localStorage.setItem("custom_cr", JSON.stringify(customCr));
+    set(ref(db, "custom_cr"), customCr).catch(()=>{});
+  }, [customCr, crLoaded]);
 
   const nationalities = ["الكل",...Array.from(new Set(records.map(r=>r.nationality).filter(Boolean))).sort()];
 
@@ -709,6 +768,16 @@ export default function App() {
 
   // صفحة تسجيل الدخول
   if (!user) return <AuthScreen darkMode={darkMode}/>;
+
+  // انتظار تحميل البيانات من Firebase
+  if (!recordsLoaded) return (
+    <div style={{minHeight:"100vh",background:darkMode?"#0d0f13":"#f5f0eb",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',Tahoma,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🪪</div>
+        <div style={{fontSize:16,fontWeight:700,color:darkMode?"#f0f2f7":"#6B1A1A"}}>جارٍ تحميل البيانات...</div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{minHeight:"100vh",background:darkMode?"#0d0f13":"#f0f4f8",fontFamily:"'Segoe UI',Tahoma,sans-serif",direction:"rtl",colorScheme:darkMode?"dark":"light"}}>
